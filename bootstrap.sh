@@ -44,10 +44,12 @@ validate_requirements() {
         "$PROJECT_ROOT/scripts/setup/create-threatmodel-user.sh"
         "$PROJECT_ROOT/scripts/setup/configure-permissions.sh"
         "$PROJECT_ROOT/scripts/installation/install-system-dependencies.sh"
+        "$PROJECT_ROOT/scripts/installation/install-oci-runtime.sh"
         "$PROJECT_ROOT/scripts/installation/install-pytm-framework.sh"
         "$PROJECT_ROOT/scripts/installation/install-plantweb.sh"
         "$PROJECT_ROOT/scripts/installation/install-tomcat.sh"
         "$PROJECT_ROOT/scripts/installation/install-plantuml-server.sh"
+        "$PROJECT_ROOT/scripts/setup/configure-oci-runtime.sh"
         "$PROJECT_ROOT/scripts/setup/configure-plantuml-service.sh"
         "$PROJECT_ROOT/scripts/setup/configure-tomcat-outputs.sh"
         "$PROJECT_ROOT/scripts/setup/configure-tomcat-docs.sh"
@@ -134,6 +136,40 @@ install_system_dependencies() {
     run_install_script \
         "$script_path" \
         "System Dependencies" \
+        "$INSTALL_TIMEOUT"
+
+    return $?
+}
+
+# =============================================================================
+# PHASE 1.5: INSTALL OCI RUNTIME
+# =============================================================================
+
+install_oci_runtime() {
+    log_header "PHASE 1.5: ${OCI_RUNTIME_NAME} Runtime"
+
+    local script_path="$PROJECT_ROOT/scripts/installation/install-oci-runtime.sh"
+
+    run_install_script \
+        "$script_path" \
+        "${OCI_RUNTIME_NAME} Runtime" \
+        "$INSTALL_TIMEOUT"
+
+    return $?
+}
+
+# =============================================================================
+# PHASE 1.6: CONFIGURE OCI RUNTIME
+# =============================================================================
+
+configure_oci_runtime() {
+    log_header "PHASE 1.6: ${OCI_RUNTIME_NAME} Configuration"
+
+    local script_path="$PROJECT_ROOT/scripts/setup/configure-oci-runtime.sh"
+
+    run_install_script \
+        "$script_path" \
+        "${OCI_RUNTIME_NAME} Configuration" \
         "$INSTALL_TIMEOUT"
 
     return $?
@@ -422,6 +458,12 @@ alias outputs-url='echo \"http://localhost:$TOMCAT_PORT/outputs/\"'
 
 # Tomcat Docs Access
 alias tomcat-docs='echo \"http://localhost:$TOMCAT_PORT/docs/\"'
+
+# OCI Runtime Helpers
+alias oci='${OCI_RUNTIME_BIN}'
+alias oci-info='${OCI_RUNTIME_BIN} info'
+alias oci-ps='${OCI_RUNTIME_BIN} ps'
+alias oci-socket-status='sudo systemctl status ${OCI_RUNTIME_SERVICE}'
 "
 
     if [[ -f "$bash_aliases" ]]; then
@@ -450,6 +492,10 @@ alias tomcat-docs='echo \"http://localhost:$TOMCAT_PORT/docs/\"'
     log_info "  - plantuml-url: Show PlantUML server URL"
     log_info "  - outputs-url: Show outputs web URL"
     log_info "  - tomcat-docs: Show Tomcat documentation URL"
+    log_info "  - oci: Run ${OCI_RUNTIME_NAME} CLI"
+    log_info "  - oci-info: Display runtime info"
+    log_info "  - oci-ps: List running containers"
+    log_info "  - oci-socket-status: Inspect ${OCI_RUNTIME_SERVICE}"
 
     return 0
 }
@@ -475,6 +521,32 @@ install_plantweb_aliases() {
         log_info "  Available after re-login: plantweb-render, plantweb-test, etc."
     else
         log_warning "Failed to install Plantweb aliases (not critical)"
+    fi
+
+    return 0
+}
+
+# =============================================================================
+# INSTALL OCI RUNTIME ALIASES
+# =============================================================================
+
+install_oci_runtime_aliases() {
+    log_info "Installing ${OCI_RUNTIME_NAME} shell aliases..."
+
+    local source_file="$PROJECT_ROOT/config/shell/oci-runtime-aliases.sh"
+    local target_file="/etc/profile.d/oci-runtime-aliases.sh"
+
+    if [[ ! -f "$source_file" ]]; then
+        log_warning "${OCI_RUNTIME_NAME} aliases file not found: $source_file (optional)"
+        return 0
+    fi
+
+    if cp "$source_file" "$target_file" 2>/dev/null; then
+        chmod 644 "$target_file"
+        log_success "${OCI_RUNTIME_NAME} aliases installed: $target_file"
+        log_info "  Available after re-login: oci, oci-ps, oci-images"
+    else
+        log_warning "Failed to install ${OCI_RUNTIME_NAME} aliases (not critical)"
     fi
 
     return 0
@@ -532,7 +604,7 @@ run_final_verification() {
     log_header "PHASE 8: Final Verification"
 
     local checks_passed=0
-    local checks_total=9
+    local checks_total=10
 
     log_info "Verifying system dependencies..."
     if is_component_functional "system"; then
@@ -540,6 +612,14 @@ run_final_verification() {
         ((checks_passed++))
     else
         log_error "  System dependencies: FAILED"
+    fi
+
+    log_info "Verifying ${OCI_RUNTIME_NAME} runtime..."
+    if is_component_functional "oci-runtime"; then
+        log_success "  ${OCI_RUNTIME_NAME}: OK"
+        ((checks_passed++))
+    else
+        log_error "  ${OCI_RUNTIME_NAME}: FAILED"
     fi
 
     log_info "Verifying pytm framework..."
@@ -634,7 +714,7 @@ run_final_verification() {
     log_header "Verification Summary"
     log_info "Checks passed: $checks_passed/$checks_total"
 
-    if [[ $checks_passed -ge 8 ]]; then
+    if [[ $checks_passed -ge 9 ]]; then
         log_success "All critical verification checks passed"
         return 0
     else
@@ -808,6 +888,7 @@ main() {
         log_info "To force reinstallation: sudo rm -rf $APP_STATE_DIR"
 
         if is_component_functional "system" && \
+           is_component_functional "oci-runtime" && \
            is_component_functional "pytm" && \
            is_component_functional "tomcat" && \
            is_component_functional "plantuml-server" && \
@@ -838,6 +919,16 @@ main() {
 
     if ! install_system_dependencies; then
         log_error "Phase 1 failed: System Dependencies"
+        return 1
+    fi
+
+    if ! install_oci_runtime; then
+        log_error "Phase 1.5 failed: ${OCI_RUNTIME_NAME} Runtime"
+        return 1
+    fi
+
+    if ! configure_oci_runtime; then
+        log_error "Phase 1.6 failed: ${OCI_RUNTIME_NAME} Configuration"
         return 1
     fi
 
@@ -889,6 +980,7 @@ main() {
     create_readme_files
     configure_shell_environment
     install_plantweb_aliases
+    install_oci_runtime_aliases
 
     start_plantuml_service
 
