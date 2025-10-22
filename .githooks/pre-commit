@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Enforce logging policy: disallow emojis and decorative unicode symbols.
+
+set -euo pipefail
+
+if ! command -v python3 >/dev/null 2>&1; then
+    echo "[WARN] python3 not available; skipping unicode policy check" >&2
+    exit 0
+fi
+
+mapfile -d '' staged_files < <(git diff --cached --name-only --diff-filter=ACMRT -z)
+
+if [[ ${#staged_files[@]} -eq 0 ]]; then
+    exit 0
+fi
+
+repo_root="$(git rev-parse --show-toplevel)"
+
+if ! python3 "$repo_root/infrastructure/git/policy/check_disallowed_unicode.py" "${staged_files[@]}"; then
+    echo "[ERROR] Commit aborted due to disallowed symbols." >&2
+    exit 1
+fi
+
+exit 0

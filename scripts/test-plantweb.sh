@@ -31,15 +31,15 @@ print_test() {
 }
 
 print_success() {
-    echo -e "${GREEN}✓${NC} $1"
+    echo -e "${GREEN}[SUCCESS]${NC} $1"
 }
 
 print_error() {
-    echo -e "${RED}✗${NC} $1"
+    echo -e "${RED}[ERROR]${NC} $1"
 }
 
 print_warning() {
-    echo -e "${YELLOW}⚠${NC} $1"
+    echo -e "${YELLOW}[WARNING]${NC} $1"
 }
 
 print_header() {
@@ -77,21 +77,21 @@ sys.path.insert(0, '/vagrant')
 try:
     # Test plantweb package
     import plantweb
-    print(f'✓ plantweb package: {plantweb.__version__}')
+    print(f'[OK] plantweb package: {plantweb.__version__}')
 
     # Test our module
     from dashboard.plantweb import render, configure
-    print('✓ dashboard.plantweb module')
+    print('[OK] dashboard.plantweb module')
 
     # Test submodules
     from dashboard.plantweb.config import get_config
     from dashboard.plantweb.renderer import encode_plantuml
     from dashboard.plantweb.cache import get_cache_stats
     from dashboard.plantweb.pytm_adapter import render_pytm_seq
-    print('✓ All submodules importable')
+    print('[OK] All submodules importable')
 
 except ImportError as e:
-    print(f'✗ Import failed: {e}')
+    print(f'[ERROR] Import failed: {e}')
     sys.exit(1)
 "
 
@@ -133,16 +133,16 @@ from dashboard.plantweb import get_config, configure
 
 # Get default config
 config = get_config()
-print(f'✓ Server URL: {config[\"server_url\"]}')
-print(f'✓ Cache dir: {config[\"cache_dir\"]}')
-print(f'✓ Format: {config[\"format\"]}')
-print(f'✓ Use cache: {config[\"use_cache\"]}')
+print(f'[OK] Server URL: {config[\"server_url\"]}')
+print(f'[OK] Cache dir: {config[\"cache_dir\"]}')
+print(f'[OK] Format: {config[\"format\"]}')
+print(f'[OK] Use cache: {config[\"use_cache\"]}')
 
 # Test configuration
 configure(format='png')
 config = get_config()
 assert config['format'] == 'png', 'Configuration not applied'
-print('✓ Configuration changes work')
+print('[OK] Configuration changes work')
 "
 
     if python3 -c "$test_script"; then
@@ -176,9 +176,9 @@ from dashboard.plantweb import render_file
 
 try:
     result = render_file('$test_file', '$output_file')
-    print(f'✓ Rendered to: {result}')
+    print(f'[OK] Rendered to: {result}')
 except Exception as e:
-    print(f'✗ Rendering failed: {e}')
+    print(f'[ERROR] Rendering failed: {e}')
     sys.exit(1)
 "
 
@@ -215,9 +215,9 @@ from dashboard.plantweb.cache import get_cached, save_to_cache
 
 # Get stats
 stats = get_cache_stats()
-print(f'✓ Cache enabled: {stats[\"enabled\"]}')
-print(f'✓ Cache dir: {stats[\"cache_dir\"]}')
-print(f'✓ Total files: {stats[\"total_files\"]}')
+print(f'[OK] Cache enabled: {stats[\"enabled\"]}')
+print(f'[OK] Cache dir: {stats[\"cache_dir\"]}')
+print(f'[OK] Total files: {stats[\"total_files\"]}')
 
 # Test save/retrieve
 test_content = '@startuml\\nTest\\n@enduml'
@@ -227,9 +227,9 @@ save_to_cache(test_content, 'svg', test_data)
 retrieved = get_cached(test_content, 'svg')
 
 if retrieved == test_data:
-    print('✓ Cache save/retrieve works')
+    print('[OK] Cache save/retrieve works')
 else:
-    print('✗ Cache retrieve failed')
+    print('[ERROR] Cache retrieve failed')
     sys.exit(1)
 "
 
@@ -288,14 +288,14 @@ try:
     code = extract_plantuml_from_pytm(tm, 'seq')
 
     if code and len(code) > 10:
-        print('✓ PlantUML extracted from pytm')
+        print('[OK] PlantUML extracted from pytm')
         print(f'  Length: {len(code)} chars')
     else:
-        print('✗ Extraction failed')
+        print('[ERROR] Extraction failed')
         sys.exit(1)
 
 except Exception as e:
-    print(f'✗ pytm integration failed: {e}')
+    print(f'[ERROR] pytm integration failed: {e}')
     sys.exit(1)
 "
 
