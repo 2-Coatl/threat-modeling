@@ -265,33 +265,32 @@ main() {
     log_success "Diagram service configuration completed"
 
     cat << EOF
-
-════════════════════════════════════════════════════════════
+------------------------------------------------------------
   Diagram Service - Configuration Complete
-════════════════════════════════════════════════════════════
+------------------------------------------------------------
 
 Access the service:
-  • Web Interface:  http://localhost:5000
-  • API Health:     http://localhost:5000/health
-  • API Docs:       See app.py for endpoints
+  - Web Interface:  http://localhost:5000
+  - API Health:     http://localhost:5000/health
+  - API Docs:       See app.py for endpoints
 
 Service management:
-  • Start:   sudo systemctl start diagram-service
-  • Stop:    sudo systemctl stop diagram-service
-  • Restart: sudo systemctl restart diagram-service
-  • Status:  sudo systemctl status diagram-service
-  • Logs:    sudo journalctl -u diagram-service -f
+  - Start:   sudo systemctl start diagram-service
+  - Stop:    sudo systemctl stop diagram-service
+  - Restart: sudo systemctl restart diagram-service
+  - Status:  sudo systemctl status diagram-service
+  - Logs:    sudo journalctl -u diagram-service -f
 
 Log files:
-  • Access:  /var/log/diagram-service/access.log
-  • Error:   /var/log/diagram-service/error.log
+  - Access:  /var/log/diagram-service/access.log
+  - Error:   /var/log/diagram-service/error.log
 
 Configuration:
-  • Service: /etc/systemd/system/diagram-service.service
-  • App Dir: $PROJECT_ROOT/dashboard
-  • History: $PROJECT_ROOT/dashboard/history
+  - Service: /etc/systemd/system/diagram-service.service
+  - App Dir: $PROJECT_ROOT/dashboard
+  - History: $PROJECT_ROOT/dashboard/history
 
-════════════════════════════════════════════════════════════
+------------------------------------------------------------
 EOF
 
     return 0

@@ -244,7 +244,7 @@ verify_outputs_accessible() {
         if [[ "$all_ok" == "true" ]]; then
             log_success "All outputs endpoints accessible"
             for endpoint in "${endpoints[@]}"; do
-                log_success "  ✓ ${base_url}${endpoint}"
+                log_success "Endpoint reachable: ${base_url}${endpoint}"
             done
             return 0
         fi
@@ -277,27 +277,26 @@ main() {
     log_success "Tomcat outputs configuration completed"
 
     cat << EOF
-
-════════════════════════════════════════════════════════════
+------------------------------------------------------------
   Tomcat Outputs - Configuration Complete
-════════════════════════════════════════════════════════════
+------------------------------------------------------------
 
 Access outputs via web browser:
-  • All outputs:  http://localhost:$TOMCAT_PORT/outputs/
-  • Diagrams:     http://localhost:$TOMCAT_PORT/outputs/diagrams/
-  • Reports:      http://localhost:$TOMCAT_PORT/outputs/reports/
+  - All outputs:  http://localhost:$TOMCAT_PORT/outputs/
+  - Diagrams:     http://localhost:$TOMCAT_PORT/outputs/diagrams/
+  - Reports:      http://localhost:$TOMCAT_PORT/outputs/reports/
 
 Configuration files:
-  • Context:      $TOMCAT_HOME/conf/Catalina/localhost/outputs.xml
-  • Web config:   $TOMCAT_HOME/conf/web.xml
-  • Backup:       $TOMCAT_HOME/conf/web.xml.backup
+  - Context:      $TOMCAT_HOME/conf/Catalina/localhost/outputs.xml
+  - Web config:   $TOMCAT_HOME/conf/web.xml
+  - Backup:       $TOMCAT_HOME/conf/web.xml.backup
 
 Output directories:
-  • Base:         $OUTPUT_DIR/
-  • Diagrams:     $OUTPUT_DIR/diagrams/
-  • Reports:      $OUTPUT_DIR/reports/
+  - Base:         $OUTPUT_DIR/
+  - Diagrams:     $OUTPUT_DIR/diagrams/
+  - Reports:      $OUTPUT_DIR/reports/
 
-════════════════════════════════════════════════════════════
+------------------------------------------------------------
 EOF
 
     return 0

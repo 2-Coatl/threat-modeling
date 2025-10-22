@@ -13,6 +13,41 @@ readonly PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 readonly BOOTSTRAP_SCRIPT="${PROJECT_ROOT}/bootstrap.sh"
 
 # ============================================================================
+# GIT HOOKS SETUP
+# ============================================================================
+
+configure_git_hooks() {
+    if ! command -v git >/dev/null 2>&1; then
+        echo "[WARN] Git is not available; skipping hook configuration" >&2
+        return 0
+    fi
+
+    if ! git -C "${PROJECT_ROOT}" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        echo "[WARN] Not inside a Git repository; skipping hook configuration" >&2
+        return 0
+    fi
+
+    local current_path
+    current_path=$(git -C "${PROJECT_ROOT}" config --get core.hooksPath || true)
+
+    if [[ "${current_path}" == ".githooks" ]]; then
+        echo "[INFO] Git hooks path already configured" >&2
+        return 0
+    fi
+
+    if git -C "${PROJECT_ROOT}" config core.hooksPath .githooks; then
+        echo "[INFO] Configured Git hooks path to .githooks" >&2
+    else
+        echo "[ERROR] Failed to configure Git hooks path" >&2
+        return 1
+    fi
+
+    return 0
+}
+
+configure_git_hooks || exit 1
+
+# ============================================================================
 # VALIDATION
 # ============================================================================
 

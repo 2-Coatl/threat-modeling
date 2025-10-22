@@ -57,7 +57,7 @@ Alice <-- Bob: Another authentication Response
         # Render the diagram
         result = render(plantuml_code, output_path, format='svg')
 
-        print(f"✓ Success!")
+        print("[SUCCESS] Diagram rendered")
         print(f"  Diagram saved to: {result}")
         print(f"  File size: {result.stat().st_size} bytes")
         print()
@@ -65,7 +65,7 @@ Alice <-- Bob: Another authentication Response
         print("  http://localhost:8080/outputs/diagrams/example_basic.svg")
 
     except Exception as e:
-        print(f"✗ Error: {e}")
+        print(f"[ERROR] Rendering failed: {e}")
         return 1
 
     return 0

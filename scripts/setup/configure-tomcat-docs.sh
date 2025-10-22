@@ -237,10 +237,10 @@ verify_access() {
 
         for app in "${apps[@]}"; do
             if curl -sf --max-time 2 "${base_url}/${app}/" >/dev/null 2>&1; then
-                log_success "  ✓ ${base_url}/${app}/"
+                log_success "Application reachable: ${base_url}/${app}/"
             else
                 all_ok=false
-                log_debug "  ✗ ${base_url}/${app}/ (not ready yet)"
+                log_debug "Application not ready yet: ${base_url}/${app}/"
             fi
         done
 

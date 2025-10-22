@@ -285,10 +285,10 @@ def handle_render_batch(
 
         for input_path, result in results.items():
             if isinstance(result, Exception):
-                print(f"✗ {input_path}: {result}", file=sys.stderr)
+                print(f"[ERROR] {input_path}: {result}", file=sys.stderr)
                 error_count += 1
             else:
-                print(f"✓ {input_path} -> {result}")
+                print(f"[SUCCESS] {input_path} -> {result}")
                 success_count += 1
 
         print()
