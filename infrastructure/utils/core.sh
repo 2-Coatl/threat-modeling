@@ -286,6 +286,38 @@ verify_plantuml_server_functional() {
     return 0
 }
 
+# -----------------------------------------------------------------------------
+# OCI RUNTIME VERIFICATION
+# -----------------------------------------------------------------------------
+
+verify_oci_runtime_functional() {
+    local runtime_bin="${OCI_RUNTIME_BIN:-podman}"
+
+    if ! command -v "$runtime_bin" >/dev/null 2>&1; then
+        log_debug "OCI runtime binary not found: $runtime_bin"
+        return 1
+    fi
+
+    local info_output
+    if ! info_output=$(timeout 15s "$runtime_bin" info 2>&1); then
+        log_debug "OCI runtime info command failed: $info_output"
+        return 1
+    fi
+
+    if [[ -n "${OCI_RUNTIME_SERVICE:-}" ]] && command -v systemctl >/dev/null 2>&1; then
+        if systemctl list-unit-files | grep -q "${OCI_RUNTIME_SERVICE}"; then
+            if ! systemctl is-enabled --quiet "${OCI_RUNTIME_SERVICE}"; then
+                log_debug "OCI runtime service not enabled: ${OCI_RUNTIME_SERVICE}"
+            fi
+        else
+            log_debug "OCI runtime service unit not installed: ${OCI_RUNTIME_SERVICE}"
+        fi
+    fi
+
+    log_debug "OCI runtime verification passed"
+    return 0
+}
+
 # =============================================================================
 # COMPONENT FUNCTIONALITY CHECK
 # =============================================================================
@@ -313,6 +345,9 @@ is_component_functional() {
             ;;
         tomcat)
             verifier="verify_tomcat_functional"
+            ;;
+        oci-runtime)
+            verifier="verify_oci_runtime_functional"
             ;;
         plantuml-server)
             verifier="verify_plantuml_server_functional"
