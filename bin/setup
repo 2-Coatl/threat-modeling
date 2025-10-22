@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# bin/setup - Wrapper to bootstrap.sh
+# Simple interface for users to run installation
+
+set -euo pipefail
+
+# ============================================================================
+# CONSTANTS
+# ============================================================================
+
+readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+readonly BOOTSTRAP_SCRIPT="${PROJECT_ROOT}/bootstrap.sh"
+
+# ============================================================================
+# VALIDATION
+# ============================================================================
+
+if [[ ! -f "${BOOTSTRAP_SCRIPT}" ]]; then
+    echo "ERROR: bootstrap.sh not found at: ${BOOTSTRAP_SCRIPT}" >&2
+    exit 1
+fi
+
+if [[ ! -r "${BOOTSTRAP_SCRIPT}" ]]; then
+    echo "ERROR: bootstrap.sh is not readable" >&2
+    exit 1
+fi
+
+# ============================================================================
+# ROOT CHECK WARNING
+# ============================================================================
+
+if [[ ${EUID} -ne 0 ]]; then
+    echo "WARNING: This script should be run as root (use sudo)" >&2
+    echo "Attempting to run bootstrap with sudo..." >&2
+    echo "" >&2
+
+    exec sudo bash "${BOOTSTRAP_SCRIPT}" "$@"
+else
+    exec bash "${BOOTSTRAP_SCRIPT}" "$@"
+fi

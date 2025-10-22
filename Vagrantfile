@@ -1,0 +1,108 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  # ===========================================================================
+  # BASE BOX
+  # ===========================================================================
+
+  config.vm.box = "ubuntu/focal64"
+  config.vm.box_check_update = false
+
+  # ===========================================================================
+  # NETWORK CONFIGURATION
+  # ===========================================================================
+
+  config.vm.network "private_network", ip: "192.168.56.10"
+
+  # Port forwarding for PlantUML Server
+  config.vm.network "forwarded_port", guest: 8080, host: 8080, host_ip: "127.0.0.1"
+
+  # ===========================================================================
+  # HOSTNAME
+  # ===========================================================================
+
+  config.vm.hostname = "threat-modeling"
+
+  # ===========================================================================
+  # SYNCED FOLDER
+  # ===========================================================================
+
+  config.vm.synced_folder ".", "/vagrant"
+
+  # ===========================================================================
+  # PROVIDER CONFIGURATION (VirtualBox)
+  # ===========================================================================
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.name = "threat-modeling-vm"
+    vb.memory = "2048"
+    vb.cpus = 2
+
+    # DNS resolution fixes
+    vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+    vb.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
+
+    # Prevent time drift
+    vb.customize ["guestproperty", "set", :id, "/VirtualBox/GuestAdd/VBoxService/--timesync-set-threshold", 10000]
+  end
+
+  # ===========================================================================
+  # PROVISIONING
+  # ===========================================================================
+
+  config.vm.provision "shell", inline: <<-SHELL
+    set -euo pipefail
+
+    export DEBIAN_FRONTEND=noninteractive
+
+    echo "=== Starting Threat Modeling System Installation ==="
+
+    # Navigate to project directory
+    cd /vagrant
+
+    # Execute bootstrap
+    if bash bootstrap.sh; then
+      echo "[SUCCESS] Bootstrap completed"
+    else
+      echo "[ERROR] Bootstrap failed" >&2
+      exit 1
+    fi
+  SHELL
+
+  # ===========================================================================
+  # POST-UP MESSAGE
+  # ===========================================================================
+
+  config.vm.post_up_message = <<-MSG
+
+    ════════════════════════════════════════════════════════════
+       Threat Modeling VM Ready
+    ════════════════════════════════════════════════════════════
+
+    Access the VM:
+      vagrant ssh
+
+    PlantUML Server:
+      Host:   http://localhost:8080/plantuml/
+      VM:     http://192.168.56.10:8080/plantuml/
+      Status: plantuml-status (from inside VM)
+
+    Generate threat models:
+      cd /vagrant
+      ./bin/generate
+
+    View outputs:
+      /vagrant/dashboard/output/diagrams/
+      /vagrant/dashboard/output/reports/
+
+    Useful commands:
+      ./bin/generate --list    # List available models
+      ./bin/generate --help    # Show help
+      ./bin/setup              # Re-run installation
+
+    Documentation:
+      /vagrant/README.md
+
+  MSG
+end

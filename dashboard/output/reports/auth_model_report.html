@@ -1,0 +1,82 @@
+<h1 id="threat-model-report-call-center-authentication-system">Threat Model Report: Call Center Authentication System</h1>
+<p><strong>Description:</strong> Authentication and authorization flow for call center agents accessing the dashboard</p>
+<hr />
+<h2 id="executive-summary">Executive Summary</h2>
+<p>This document presents a comprehensive threat analysis of the Call Center Authentication System system using the STRIDE methodology. The analysis identifies potential security threats, evaluates their severity, and proposes mitigation strategies.</p>
+<hr />
+<h2 id="identified-threats">Identified Threats</h2>
+<p>The following security threats have been identified through systematic analysis:</p>
+<p>[&lt;pytm.pytm.Finding(1) at 0x7fc50396d3d0&gt;, &lt;pytm.pytm.Finding(2) at 0x7fc50396d430&gt;, &lt;pytm.pytm.Finding(3) at 0x7fc50396d490&gt;, &lt;pytm.pytm.Finding(4) at 0x7fc50396d4f0&gt;, &lt;pytm.pytm.Finding(5) at 0x7fc50396d550&gt;, &lt;pytm.pytm.Finding(6) at 0x7fc50396d5b0&gt;, &lt;pytm.pytm.Finding(7) at 0x7fc50396d610&gt;, &lt;pytm.pytm.Finding(8) at 0x7fc50396d670&gt;, &lt;pytm.pytm.Finding(9) at 0x7fc50396d6d0&gt;, &lt;pytm.pytm.Finding(10) at 0x7fc50396d730&gt;, &lt;pytm.pytm.Finding(11) at 0x7fc50396d790&gt;, &lt;pytm.pytm.Finding(12) at 0x7fc50396d7f0&gt;, &lt;pytm.pytm.Finding(13) at 0x7fc50396d850&gt;, &lt;pytm.pytm.Finding(14) at 0x7fc50396d8b0&gt;, &lt;pytm.pytm.Finding(15) at 0x7fc50396d910&gt;, &lt;pytm.pytm.Finding(16) at 0x7fc50396d970&gt;, &lt;pytm.pytm.Finding(17) at 0x7fc50396d9d0&gt;, &lt;pytm.pytm.Finding(18) at 0x7fc50396da30&gt;, &lt;pytm.pytm.Finding(19) at 0x7fc50396da90&gt;, &lt;pytm.pytm.Finding(20) at 0x7fc50396daf0&gt;, &lt;pytm.pytm.Finding(21) at 0x7fc50396db50&gt;, &lt;pytm.pytm.Finding(22) at 0x7fc50396dbb0&gt;, &lt;pytm.pytm.Finding(23) at 0x7fc50396dc10&gt;, &lt;pytm.pytm.Finding(24) at 0x7fc50396dc70&gt;, &lt;pytm.pytm.Finding(25) at 0x7fc50396dcd0&gt;, &lt;pytm.pytm.Finding(26) at 0x7fc50396dd30&gt;, &lt;pytm.pytm.Finding(27) at 0x7fc50396dd90&gt;, &lt;pytm.pytm.Finding(28) at 0x7fc50396ddf0&gt;, &lt;pytm.pytm.Finding(29) at 0x7fc50396de50&gt;, &lt;pytm.pytm.Finding(30) at 0x7fc50396deb0&gt;, &lt;pytm.pytm.Finding(31) at 0x7fc50396df10&gt;, &lt;pytm.pytm.Finding(32) at 0x7fc50396df70&gt;, &lt;pytm.pytm.Finding(33) at 0x7fc50396dfd0&gt;, &lt;pytm.pytm.Finding(34) at 0x7fc5038f8070&gt;, &lt;pytm.pytm.Finding(35) at 0x7fc5038f80d0&gt;, &lt;pytm.pytm.Finding(36) at 0x7fc5038f8130&gt;, &lt;pytm.pytm.Finding(37) at 0x7fc5038f8190&gt;, &lt;pytm.pytm.Finding(38) at 0x7fc5038f81f0&gt;, &lt;pytm.pytm.Finding(39) at 0x7fc5038f8250&gt;, &lt;pytm.pytm.Finding(40) at 0x7fc5038f82b0&gt;, &lt;pytm.pytm.Finding(41) at 0x7fc5038f8310&gt;, &lt;pytm.pytm.Finding(42) at 0x7fc5038f8370&gt;, &lt;pytm.pytm.Finding(43) at 0x7fc5038f83d0&gt;, &lt;pytm.pytm.Finding(44) at 0x7fc5038f8430&gt;, &lt;pytm.pytm.Finding(45) at 0x7fc5038f8490&gt;, &lt;pytm.pytm.Finding(46) at 0x7fc5038f84f0&gt;, &lt;pytm.pytm.Finding(47) at 0x7fc5038f8550&gt;, &lt;pytm.pytm.Finding(48) at 0x7fc5038f85b0&gt;, &lt;pytm.pytm.Finding(49) at 0x7fc5038f8610&gt;, &lt;pytm.pytm.Finding(50) at 0x7fc5038f8670&gt;, &lt;pytm.pytm.Finding(51) at 0x7fc5038f86d0&gt;, &lt;pytm.pytm.Finding(52) at 0x7fc5038f8730&gt;, &lt;pytm.pytm.Finding(53) at 0x7fc5038f8790&gt;, &lt;pytm.pytm.Finding(54) at 0x7fc5038f87f0&gt;, &lt;pytm.pytm.Finding(55) at 0x7fc5038f8850&gt;, &lt;pytm.pytm.Finding(56) at 0x7fc5038f88b0&gt;, &lt;pytm.pytm.Finding(57) at 0x7fc5038f8910&gt;, &lt;pytm.pytm.Finding(58) at 0x7fc5038f8970&gt;, &lt;pytm.pytm.Finding(59) at 0x7fc5038f89d0&gt;, &lt;pytm.pytm.Finding(60) at 0x7fc5038f8a30&gt;, &lt;pytm.pytm.Finding(61) at 0x7fc5038f8a90&gt;, &lt;pytm.pytm.Finding(62) at 0x7fc5038f8af0&gt;, &lt;pytm.pytm.Finding(63) at 0x7fc5038f8b50&gt;, &lt;pytm.pytm.Finding(64) at 0x7fc5038f8bb0&gt;, &lt;pytm.pytm.Finding(65) at 0x7fc5038f8c10&gt;, &lt;pytm.pytm.Finding(66) at 0x7fc5038f8c70&gt;, &lt;pytm.pytm.Finding(67) at 0x7fc5038f8cd0&gt;, &lt;pytm.pytm.Finding(68) at 0x7fc5038f8d30&gt;, &lt;pytm.pytm.Finding(69) at 0x7fc5038f8d90&gt;, &lt;pytm.pytm.Finding(70) at 0x7fc5038f8df0&gt;, &lt;pytm.pytm.Finding(71) at 0x7fc5038f8e50&gt;, &lt;pytm.pytm.Finding(72) at 0x7fc5038f8eb0&gt;, &lt;pytm.pytm.Finding(73) at 0x7fc5038f8f10&gt;, &lt;pytm.pytm.Finding(74) at 0x7fc5038f8f70&gt;, &lt;pytm.pytm.Finding(75) at 0x7fc5038f8fd0&gt;, &lt;pytm.pytm.Finding(76) at 0x7fc503904070&gt;, &lt;pytm.pytm.Finding(77) at 0x7fc5039040d0&gt;, &lt;pytm.pytm.Finding(78) at 0x7fc503904130&gt;, &lt;pytm.pytm.Finding(79) at 0x7fc503904190&gt;, &lt;pytm.pytm.Finding(80) at 0x7fc5039041f0&gt;, &lt;pytm.pytm.Finding(81) at 0x7fc503904250&gt;, &lt;pytm.pytm.Finding(82) at 0x7fc5039042b0&gt;, &lt;pytm.pytm.Finding(83) at 0x7fc503904310&gt;, &lt;pytm.pytm.Finding(84) at 0x7fc503904370&gt;, &lt;pytm.pytm.Finding(85) at 0x7fc5039043d0&gt;, &lt;pytm.pytm.Finding(86) at 0x7fc503904430&gt;, &lt;pytm.pytm.Finding(87) at 0x7fc503904490&gt;, &lt;pytm.pytm.Finding(88) at 0x7fc5039044f0&gt;, &lt;pytm.pytm.Finding(89) at 0x7fc503904550&gt;, &lt;pytm.pytm.Finding(90) at 0x7fc5039045b0&gt;, &lt;pytm.pytm.Finding(91) at 0x7fc503904610&gt;, &lt;pytm.pytm.Finding(92) at 0x7fc503904670&gt;, &lt;pytm.pytm.Finding(93) at 0x7fc5039046d0&gt;, &lt;pytm.pytm.Finding(94) at 0x7fc503904730&gt;, &lt;pytm.pytm.Finding(95) at 0x7fc503904790&gt;, &lt;pytm.pytm.Finding(96) at 0x7fc5039047f0&gt;, &lt;pytm.pytm.Finding(97) at 0x7fc503904850&gt;, &lt;pytm.pytm.Finding(98) at 0x7fc5039048b0&gt;, &lt;pytm.pytm.Finding(99) at 0x7fc503904910&gt;, &lt;pytm.pytm.Finding(100) at 0x7fc503904970&gt;, &lt;pytm.pytm.Finding(101) at 0x7fc5039049d0&gt;, &lt;pytm.pytm.Finding(102) at 0x7fc503904a30&gt;, &lt;pytm.pytm.Finding(103) at 0x7fc503904a90&gt;, &lt;pytm.pytm.Finding(104) at 0x7fc503904af0&gt;, &lt;pytm.pytm.Finding(105) at 0x7fc503904b50&gt;, &lt;pytm.pytm.Finding(106) at 0x7fc503904bb0&gt;, &lt;pytm.pytm.Finding(107) at 0x7fc503904c10&gt;, &lt;pytm.pytm.Finding(108) at 0x7fc503904c70&gt;, &lt;pytm.pytm.Finding(109) at 0x7fc503904cd0&gt;, &lt;pytm.pytm.Finding(110) at 0x7fc503904d30&gt;, &lt;pytm.pytm.Finding(111) at 0x7fc503904d90&gt;, &lt;pytm.pytm.Finding(112) at 0x7fc503904df0&gt;, &lt;pytm.pytm.Finding(113) at 0x7fc503904e50&gt;, &lt;pytm.pytm.Finding(114) at 0x7fc503904eb0&gt;, &lt;pytm.pytm.Finding(115) at 0x7fc503904f10&gt;, &lt;pytm.pytm.Finding(116) at 0x7fc503904f70&gt;, &lt;pytm.pytm.Finding(117) at 0x7fc503904fd0&gt;, &lt;pytm.pytm.Finding(118) at 0x7fc50390d070&gt;, &lt;pytm.pytm.Finding(119) at 0x7fc50390d0d0&gt;, &lt;pytm.pytm.Finding(120) at 0x7fc50390d130&gt;, &lt;pytm.pytm.Finding(121) at 0x7fc50390d190&gt;, &lt;pytm.pytm.Finding(122) at 0x7fc50390d1f0&gt;, &lt;pytm.pytm.Finding(123) at 0x7fc50390d250&gt;, &lt;pytm.pytm.Finding(124) at 0x7fc50390d2b0&gt;, &lt;pytm.pytm.Finding(125) at 0x7fc50390d310&gt;, &lt;pytm.pytm.Finding(126) at 0x7fc50390d370&gt;, &lt;pytm.pytm.Finding(127) at 0x7fc50390d3d0&gt;, &lt;pytm.pytm.Finding(128) at 0x7fc50390d430&gt;, &lt;pytm.pytm.Finding(129) at 0x7fc50390d490&gt;, &lt;pytm.pytm.Finding(130) at 0x7fc50390d4f0&gt;, &lt;pytm.pytm.Finding(131) at 0x7fc50390d550&gt;, &lt;pytm.pytm.Finding(132) at 0x7fc50390d5b0&gt;, &lt;pytm.pytm.Finding(133) at 0x7fc50390d610&gt;, &lt;pytm.pytm.Finding(134) at 0x7fc50390d670&gt;, &lt;pytm.pytm.Finding(135) at 0x7fc50390d6d0&gt;, &lt;pytm.pytm.Finding(136) at 0x7fc50390d730&gt;, &lt;pytm.pytm.Finding(137) at 0x7fc50390d790&gt;, &lt;pytm.pytm.Finding(138) at 0x7fc50390d7f0&gt;, &lt;pytm.pytm.Finding(139) at 0x7fc50390d850&gt;, &lt;pytm.pytm.Finding(140) at 0x7fc50390d8b0&gt;, &lt;pytm.pytm.Finding(141) at 0x7fc50390d910&gt;, &lt;pytm.pytm.Finding(142) at 0x7fc50390d970&gt;, &lt;pytm.pytm.Finding(143) at 0x7fc50390d9d0&gt;, &lt;pytm.pytm.Finding(144) at 0x7fc50390da30&gt;, &lt;pytm.pytm.Finding(145) at 0x7fc50390da90&gt;, &lt;pytm.pytm.Finding(146) at 0x7fc50390daf0&gt;, &lt;pytm.pytm.Finding(147) at 0x7fc50390db50&gt;, &lt;pytm.pytm.Finding(148) at 0x7fc50390dbb0&gt;, &lt;pytm.pytm.Finding(149) at 0x7fc50390dc10&gt;, &lt;pytm.pytm.Finding(150) at 0x7fc50390dc70&gt;, &lt;pytm.pytm.Finding(151) at 0x7fc50390dcd0&gt;]</p>
+<hr />
+<h2 id="threat-summary">Threat Summary</h2>
+<p>All identified threats are documented above with their respective: - <strong>Threat ID</strong>: Unique identifier - <strong>Severity Level</strong>: Risk rating (Critical/High/Medium/Low) - <strong>STRIDE Category</strong>: Type of threat - <strong>Target Component</strong>: Affected system element - <strong>Description</strong>: Detailed threat explanation - <strong>Mitigation</strong>: Recommended security controls</p>
+<hr />
+<h2 id="recommendations">Recommendations</h2>
+<h3 id="immediate-actions">Immediate Actions</h3>
+<ol type="1">
+<li>Address all <strong>Critical</strong> and <strong>High</strong> severity threats as priority</li>
+<li>Implement missing authentication and authorization controls</li>
+<li>Enable encryption for all sensitive data flows</li>
+<li>Review and update access control policies</li>
+</ol>
+<h3 id="security-best-practices">Security Best Practices</h3>
+<ol type="1">
+<li>Implement comprehensive logging and monitoring</li>
+<li>Conduct regular security assessments</li>
+<li>Keep all systems updated with security patches</li>
+<li>Perform penetration testing periodically</li>
+</ol>
+<h3 id="compliance-considerations">Compliance Considerations</h3>
+<ul>
+<li>Ensure PII data is properly protected</li>
+<li>Implement data retention policies</li>
+<li>Maintain audit trails for sensitive operations</li>
+<li>Follow industry security standards (ISO 27001, SOC 2)</li>
+</ul>
+<hr />
+<h2 id="architecture-overview">Architecture Overview</h2>
+<h3 id="system-components">System Components</h3>
+<p>The threat model analyzes the following architectural elements:</p>
+<ul>
+<li><strong>Actors</strong>: External entities interacting with the system</li>
+<li><strong>Processes</strong>: Application servers and services</li>
+<li><strong>Data Stores</strong>: Databases and storage systems</li>
+<li><strong>Data Flows</strong>: Communication channels between components</li>
+<li><strong>Trust Boundaries</strong>: Security perimeters</li>
+</ul>
+<h3 id="security-controls">Security Controls</h3>
+<p>Current security controls include:</p>
+<ul>
+<li>Authentication mechanisms</li>
+<li>Encryption (at rest and in transit)</li>
+<li>Access control policies</li>
+<li>Logging and monitoring</li>
+<li>Network segmentation</li>
+</ul>
+<hr />
+<h2 id="methodology">Methodology</h2>
+<p>This threat model was created using:</p>
+<ul>
+<li><strong>Framework</strong>: OWASP pytm</li>
+<li><strong>Methodology</strong>: STRIDE (Spoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, Elevation of Privilege)</li>
+<li><strong>Analysis Approach</strong>: Data Flow Diagram (DFD) based threat identification</li>
+</ul>
+<h3 id="stride-categories">STRIDE Categories</h3>
+<ul>
+<li><strong>Spoofing</strong>: Identity impersonation threats</li>
+<li><strong>Tampering</strong>: Data or system modification threats<br />
+</li>
+<li><strong>Repudiation</strong>: Denial of actions threats</li>
+<li><strong>Information Disclosure</strong>: Unauthorized data access threats</li>
+<li><strong>Denial of Service</strong>: Service availability threats</li>
+<li><strong>Elevation of Privilege</strong>: Unauthorized access escalation threats</li>
+</ul>
+<hr />
+<h2 id="references">References</h2>
+<ul>
+<li><a href="https://owasp.org/www-community/Threat_Modeling">OWASP Threat Modeling</a></li>
+<li><a href="https://en.wikipedia.org/wiki/STRIDE_(security)">STRIDE Methodology</a></li>
+<li><a href="https://www.nist.gov/cyberframework">NIST Cybersecurity Framework</a></li>
+</ul>
+<hr />
+<p><strong>Document Classification:</strong> Internal Use Only</p>

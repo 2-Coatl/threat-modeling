@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# bin/plantweb-render - CLI wrapper for Plantweb module
+# Provides command-line interface to render diagrams using PlantUML Server
+
+set -euo pipefail
+
+# =============================================================================
+# INITIALIZATION
+# =============================================================================
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# =============================================================================
+# PYTHON PATH SETUP
+# =============================================================================
+
+# Add project root to Python path
+export PYTHONPATH="${PROJECT_ROOT}:${PYTHONPATH:-}"
+
+# =============================================================================
+# EXECUTE PYTHON MODULE
+# =============================================================================
+
+exec python3 -m dashboard.plantweb.cli "$@"

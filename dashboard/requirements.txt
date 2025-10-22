@@ -1,0 +1,15 @@
+# Flask Diagram Service - Dependencies
+# Install: pip3 install -r requirements.txt
+
+# Core web framework
+Flask==2.3.3
+Werkzeug==2.3.7
+
+# HTTP requests for PlantUML Server
+requests==2.31.0
+
+# Optional: Better development server
+gunicorn==21.2.0
+
+# Optional: Environment variables
+python-dotenv==1.0.0
