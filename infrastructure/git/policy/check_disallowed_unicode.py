@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Validate staged files do not contain disallowed unicode symbols."""
+"""Validate files do not contain disallowed unicode symbols."""
 
 from __future__ import annotations
 
+import argparse
 import subprocess
 import sys
 from pathlib import Path
@@ -74,6 +75,13 @@ def _read_staged_file(path: str) -> str:
     return result.stdout
 
 
+def _read_workspace_file(path: str) -> str:
+    try:
+        return Path(path).read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as exc:
+        raise RuntimeError(f"Unable to read workspace contents for {path}") from exc
+
+
 def _find_offenders(text: str) -> List[tuple[int, str]]:
     offenders: List[tuple[int, str]] = []
     for token in BANNED_TOKENS:
@@ -88,8 +96,26 @@ def _find_offenders(text: str) -> List[tuple[int, str]]:
     return offenders
 
 
+def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description=(
+            "Scan files for decorative unicode or emoji banned by the logging policy."
+        )
+    )
+    parser.add_argument(
+        "--workspace",
+        action="store_true",
+        help=(
+            "Read file contents directly from the working tree instead of the git index"
+        ),
+    )
+    parser.add_argument("paths", nargs="*")
+    return parser.parse_args(list(argv))
+
+
 def main(argv: Sequence[str]) -> int:
-    staged_paths = list(argv)
+    args = _parse_args(argv)
+    staged_paths = list(args.paths)
     if not staged_paths:
         return 0
 
@@ -106,7 +132,10 @@ def main(argv: Sequence[str]) -> int:
         ):
             continue
         try:
-            content = _read_staged_file(path)
+            if args.workspace:
+                content = _read_workspace_file(path)
+            else:
+                content = _read_staged_file(path)
         except RuntimeError:
             continue
         if "\x00" in content:
