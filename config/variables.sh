@@ -74,6 +74,18 @@ readonly LOG_MAX_SIZE=$((10 * 1024 * 1024))  # 10MB
 readonly INSTALL_TIMEOUT=1800  # 30 minutes
 readonly COMMAND_TIMEOUT=300   # 5 minutes
 
+# =============================================================================
+# OCI RUNTIME CONFIGURATION
+# =============================================================================
+
+readonly OCI_RUNTIME_NAME="${OCI_RUNTIME_NAME:-Podman}"
+readonly OCI_RUNTIME_BIN="${OCI_RUNTIME_BIN:-podman}"
+readonly OCI_RUNTIME_SERVICE="${OCI_RUNTIME_SERVICE:-podman.socket}"
+readonly OCI_RUNTIME_GROUP="${OCI_RUNTIME_GROUP:-podman}"
+readonly OCI_RUNTIME_LOG_DIR="${OCI_RUNTIME_LOG_DIR:-/var/log/${OCI_RUNTIME_BIN}}"
+readonly OCI_STORAGE_ROOT="${OCI_STORAGE_ROOT:-/var/lib/containers/storage}"
+readonly OCI_RUN_ROOT="${OCI_RUN_ROOT:-/run/containers/storage}"
+
 # PlantUML configuration
 readonly PLANTUML_VERSION="1.2024.3"
 readonly PLANTUML_JAR="/usr/share/plantuml/plantuml.jar"
@@ -190,6 +202,15 @@ export PLANTUML_JAR
 export PLANTUML_URL
 export PYTHON_MIN_MAJOR
 export PYTHON_MIN_MINOR
+
+# OCI runtime configuration
+export OCI_RUNTIME_NAME
+export OCI_RUNTIME_BIN
+export OCI_RUNTIME_SERVICE
+export OCI_RUNTIME_GROUP
+export OCI_RUNTIME_LOG_DIR
+export OCI_STORAGE_ROOT
+export OCI_RUN_ROOT
 
 # Sudoers configuration
 export SUDOERS_FILE
