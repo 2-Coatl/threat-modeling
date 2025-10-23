@@ -1,0 +1,17 @@
+name: Policy Checks
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  policy:
+    name: policy-checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Run policy checks
+        run: ./scripts/ci/run-policy-checks.sh

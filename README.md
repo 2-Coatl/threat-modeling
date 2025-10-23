@@ -785,6 +785,10 @@ Todos los scripts siguen estos principios:
 - **Sin Fallas Silenciosas**: Manejo explícito de errores
 - **Principios SOLID**: Responsabilidad única por script
 
+Revisa el documento [Threat Modeling Engineering Ruleset](docs/standards/engineering-ruleset.md)
+para lineamientos completos sobre Bash, Python (Flask + PyTM), React, SCSS y
+Webpack dentro de nuestro monolito modular.
+
 ### Probar Cambios
 
 ```bash
