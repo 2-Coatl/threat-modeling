@@ -24,22 +24,17 @@ pragmatism and clarity over dogmatism.
 ```
 /                    # Monorepo root
 ├── bootstrap.sh     # Provisioning orchestrator (Bash)
-├── infrastructure/  # Automation, system assets, and shared tooling
-│   ├── bin/         # CLI entrypoints (Bash wrappers, installers)
-│   ├── config/      # Global variables, shell profiles, templates
-│   ├── git/         # Policy tooling and Git helpers
-│   ├── scripts/     # Installation, setup, test, and CI helpers (Bash)
-│   ├── system/      # OS/service units (systemd, etc.)
-│   ├── utils/       # Shared shell helpers
-│   └── Vagrantfile  # Configuración principal de la VM
-├── api/            # Python Flask + PyTM application (monolith core)
+├── scripts/         # Installation, setup, test, and CI helpers (Bash)
+├── infrastructure/  # Shared shell utilities, policy tooling, system assets
+├── config/          # Global variables, shell profiles, templates
+├── dashboard/       # Python Flask + PyTM application (monolith core)
 │   ├── plantweb/    # PlantUML helpers and CLI
 │   ├── templates/   # Flask Jinja templates
 │   ├── static/
 │   │   ├── js/      # React bundles (Webpack output)
 │   │   └── css/     # Compiled SCSS
 │   └── models/      # Threat modeling domain modules
-└── ui/            # Source for React + SCSS (Webpack build input)
+└── frontend/        # Source for React + SCSS (Webpack build input)
     ├── src/
     │   ├── components/
     │   ├── hooks/
@@ -48,9 +43,9 @@ pragmatism and clarity over dogmatism.
     └── webpack/    # Build configuration and tooling
 ```
 
-*Create `ui/` directories as needed when the web client evolves.  Backend
-Flask blueprints live inside `api/` and should expose narrow interfaces to
-UI bundles via REST endpoints.*
+*Create `frontend/` directories as needed when the web client evolves.  Backend
+Flask blueprints live inside `dashboard/` and should expose narrow interfaces to
+frontend bundles via REST endpoints.*
 
 ## 3. Naming Conventions
 
@@ -69,15 +64,15 @@ Additional rules:
 - Prefix private helpers with `_` in Python and `__` in SCSS (BEM modifiers).
 - Constants use `UPPER_SNAKE_CASE` in Python/TypeScript and `readonly` exports
   when possible.
-- Test modules mirror the file under test (`test_api_routes.py`,
+- Test modules mirror the file under test (`test_dashboard_api.py`,
   `App.spec.tsx`).
 
 ## 4. Layering Rules
 
 1. **Presentation (React/Flask routes)** must depend only on application
-   services defined in `api/services/` or feature modules.  They never
+   services defined in `dashboard/services/` or feature modules.  They never
    perform direct infrastructure work.
-2. **Domain/Business logic** (`api/models/`, `api/services/`) should
+2. **Domain/Business logic** (`dashboard/models/`, `dashboard/services/`) should
    be framework-agnostic.  PlantUML or PyTM orchestration belongs here when it
    represents business rules.
 3. **Infrastructure utilities** (shell installers, adapters, file IO) remain in
