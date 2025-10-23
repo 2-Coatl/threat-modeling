@@ -1,5 +1,5 @@
 #!/bin/bash
-# config/shell/oci-runtime-aliases.sh
+# infrastructure/config/shell/oci-runtime-aliases.sh
 # Shell aliases for the configured OCI runtime (Podman)
 # This file is copied to /etc/profile.d/ during bootstrap
 

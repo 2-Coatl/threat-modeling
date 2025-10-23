@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# scripts/ci/run-policy-checks.sh
+# infrastructure/scripts/ci/run-policy-checks.sh
 # Aggregate policy and static analysis checks used in CI workflows.
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../../.." && pwd)"
 
 cd "$REPO_ROOT"
 
@@ -18,7 +18,7 @@ else
 fi
 
 printf '[INFO] Running shell syntax checks...\n'
-mapfile -t shell_files < <(git ls-files '*.sh' 'bootstrap.sh' 'bin/*')
+mapfile -t shell_files < <(git ls-files '*.sh' 'bootstrap.sh' 'infrastructure/bin/*')
 if [[ ${#shell_files[@]} -eq 0 ]]; then
     printf '[INFO] No shell scripts detected.\n'
 else

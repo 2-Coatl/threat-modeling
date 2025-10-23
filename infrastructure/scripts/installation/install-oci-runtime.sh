@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# scripts/installation/install-oci-runtime.sh
+# infrastructure/scripts/installation/install-oci-runtime.sh
 # Install Podman-based OCI runtime environment
 
 set -euo pipefail

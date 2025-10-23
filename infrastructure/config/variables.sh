@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# config/variables.sh - Global project variables
+# infrastructure/config/variables.sh - Global project variables
 # This file is sourced by all scripts and must not have dependencies
 
 # Prevent multiple sourcing
@@ -11,7 +11,7 @@ fi
 # PROJECT PATHS
 # ============================================================================
 
-# Project root - resolved from config/ directory
+# Project root - resolved from infrastructure/config/ directory
 PROJECT_ROOT="${PROJECT_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 
 # Project name
@@ -257,7 +257,7 @@ fi
 # ============================================================================
 # PLANTWEB CONFIGURATION
 # ============================================================================
-# Add these lines at the end of config/variables.sh
+# Add these lines at the end of infrastructure/config/variables.sh
 
 # Plantweb version (latest or specific version like 1.2.0)
 export PLANTWEB_VERSION="${PLANTWEB_VERSION:-latest}"

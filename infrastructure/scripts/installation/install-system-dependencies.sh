@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# scripts/installation/install-system-dependencies.sh
+# infrastructure/scripts/installation/install-system-dependencies.sh
 # Install system-level dependencies: Python, Graphviz, Java, pandoc
 
 set -euo pipefail

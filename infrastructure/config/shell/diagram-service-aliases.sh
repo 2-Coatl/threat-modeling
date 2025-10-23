@@ -1,5 +1,5 @@
 #!/bin/bash
-# config/shell/diagram-service-aliases.sh
+# infrastructure/config/shell/diagram-service-aliases.sh
 # Shell aliases for Diagram Service
 # This file will be copied to /etc/profile.d/ during bootstrap
 

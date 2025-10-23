@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# scripts/setup/configure-plantuml-service.sh
+# infrastructure/scripts/setup/configure-plantuml-service.sh
 # Configure PlantUML as systemd service
 
 set -euo pipefail

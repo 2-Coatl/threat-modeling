@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# scripts/installation/install-tomcat.sh
+# infrastructure/scripts/installation/install-tomcat.sh
 # Install Apache Tomcat web server
 
 set -euo pipefail

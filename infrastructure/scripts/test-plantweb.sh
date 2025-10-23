@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# scripts/test-plantweb.sh
+# infrastructure/scripts/test-plantweb.sh
 # Test Plantweb installation and functionality
 
 set -euo pipefail
@@ -245,7 +245,7 @@ else:
 test_cli_wrapper() {
     print_test "7" "Testing CLI wrapper..."
 
-    local wrapper_path="/vagrant/bin/plantweb-render"
+    local wrapper_path="/vagrant/infrastructure/bin/plantweb-render"
 
     if [[ ! -f "$wrapper_path" ]]; then
         print_error "CLI wrapper not found: $wrapper_path"

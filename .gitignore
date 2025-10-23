@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.mypy_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.env
+.venv/
+venv/
+.env.local
+
+# Node / frontend
+node_modules/
+dist/
+build/
+ui/.cache/
+ui/node_modules/
+ui/build/
+yarn-error.log
+npm-debug.log*
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Generated outputs
+api/output/diagrams/
+api/output/tmp/
+
+# Logs
+*.log
+logs/
+
+# Coverage / reports
+test-results/
+coverage/
+
+# Terraform / Vagrant caches
+*.box
+.vagrant/

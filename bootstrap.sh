@@ -41,18 +41,18 @@ validate_requirements() {
     fi
 
     local required_scripts=(
-        "$PROJECT_ROOT/scripts/setup/create-threatmodel-user.sh"
-        "$PROJECT_ROOT/scripts/setup/configure-permissions.sh"
-        "$PROJECT_ROOT/scripts/installation/install-system-dependencies.sh"
-        "$PROJECT_ROOT/scripts/installation/install-oci-runtime.sh"
-        "$PROJECT_ROOT/scripts/installation/install-pytm-framework.sh"
-        "$PROJECT_ROOT/scripts/installation/install-plantweb.sh"
-        "$PROJECT_ROOT/scripts/installation/install-tomcat.sh"
-        "$PROJECT_ROOT/scripts/installation/install-plantuml-server.sh"
-        "$PROJECT_ROOT/scripts/setup/configure-oci-runtime.sh"
-        "$PROJECT_ROOT/scripts/setup/configure-plantuml-service.sh"
-        "$PROJECT_ROOT/scripts/setup/configure-tomcat-outputs.sh"
-        "$PROJECT_ROOT/scripts/setup/configure-tomcat-docs.sh"
+        "$PROJECT_ROOT/infrastructure/scripts/setup/create-threatmodel-user.sh"
+        "$PROJECT_ROOT/infrastructure/scripts/setup/configure-permissions.sh"
+        "$PROJECT_ROOT/infrastructure/scripts/installation/install-system-dependencies.sh"
+        "$PROJECT_ROOT/infrastructure/scripts/installation/install-oci-runtime.sh"
+        "$PROJECT_ROOT/infrastructure/scripts/installation/install-pytm-framework.sh"
+        "$PROJECT_ROOT/infrastructure/scripts/installation/install-plantweb.sh"
+        "$PROJECT_ROOT/infrastructure/scripts/installation/install-tomcat.sh"
+        "$PROJECT_ROOT/infrastructure/scripts/installation/install-plantuml-server.sh"
+        "$PROJECT_ROOT/infrastructure/scripts/setup/configure-oci-runtime.sh"
+        "$PROJECT_ROOT/infrastructure/scripts/setup/configure-plantuml-service.sh"
+        "$PROJECT_ROOT/infrastructure/scripts/setup/configure-tomcat-outputs.sh"
+        "$PROJECT_ROOT/infrastructure/scripts/setup/configure-tomcat-docs.sh"
     )
 
     local missing=()
@@ -82,10 +82,11 @@ validate_environment() {
     log_info "Validating environment..."
 
     local critical_dirs=(
+        "infrastructure/bin"
         "infrastructure/utils"
-        "scripts/installation"
-        "scripts/setup"
-        "config"
+        "infrastructure/scripts/installation"
+        "infrastructure/scripts/setup"
+        "infrastructure/config"
     )
 
     local missing_dirs=()
@@ -114,7 +115,7 @@ validate_environment() {
 setup_threatmodel_user() {
     log_header "PHASE 0: Threat Model User Setup"
 
-    local script_path="$PROJECT_ROOT/scripts/setup/create-threatmodel-user.sh"
+    local script_path="$PROJECT_ROOT/infrastructure/scripts/setup/create-threatmodel-user.sh"
 
     run_install_script \
         "$script_path" \
@@ -131,7 +132,7 @@ setup_threatmodel_user() {
 install_system_dependencies() {
     log_header "PHASE 1: System Dependencies"
 
-    local script_path="$PROJECT_ROOT/scripts/installation/install-system-dependencies.sh"
+    local script_path="$PROJECT_ROOT/infrastructure/scripts/installation/install-system-dependencies.sh"
 
     run_install_script \
         "$script_path" \
@@ -148,7 +149,7 @@ install_system_dependencies() {
 install_oci_runtime() {
     log_header "PHASE 1.5: ${OCI_RUNTIME_NAME} Runtime"
 
-    local script_path="$PROJECT_ROOT/scripts/installation/install-oci-runtime.sh"
+    local script_path="$PROJECT_ROOT/infrastructure/scripts/installation/install-oci-runtime.sh"
 
     run_install_script \
         "$script_path" \
@@ -165,7 +166,7 @@ install_oci_runtime() {
 configure_oci_runtime() {
     log_header "PHASE 1.6: ${OCI_RUNTIME_NAME} Configuration"
 
-    local script_path="$PROJECT_ROOT/scripts/setup/configure-oci-runtime.sh"
+    local script_path="$PROJECT_ROOT/infrastructure/scripts/setup/configure-oci-runtime.sh"
 
     run_install_script \
         "$script_path" \
@@ -182,7 +183,7 @@ configure_oci_runtime() {
 install_pytm_framework() {
     log_header "PHASE 2: pytm Framework"
 
-    local script_path="$PROJECT_ROOT/scripts/installation/install-pytm-framework.sh"
+    local script_path="$PROJECT_ROOT/infrastructure/scripts/installation/install-pytm-framework.sh"
 
     run_install_script \
         "$script_path" \
@@ -199,7 +200,7 @@ install_pytm_framework() {
 install_plantweb_client() {
     log_header "PHASE 2.5: Plantweb Client"
 
-    local script_path="$PROJECT_ROOT/scripts/installation/install-plantweb.sh"
+    local script_path="$PROJECT_ROOT/infrastructure/scripts/installation/install-plantweb.sh"
 
     run_install_script \
         "$script_path" \
@@ -216,7 +217,7 @@ install_plantweb_client() {
 install_tomcat() {
     log_header "PHASE 3: Apache Tomcat"
 
-    local script_path="$PROJECT_ROOT/scripts/installation/install-tomcat.sh"
+    local script_path="$PROJECT_ROOT/infrastructure/scripts/installation/install-tomcat.sh"
 
     run_install_script \
         "$script_path" \
@@ -233,7 +234,7 @@ install_tomcat() {
 install_plantuml_server() {
     log_header "PHASE 4: PlantUML Server"
 
-    local script_path="$PROJECT_ROOT/scripts/installation/install-plantuml-server.sh"
+    local script_path="$PROJECT_ROOT/infrastructure/scripts/installation/install-plantuml-server.sh"
 
     run_install_script \
         "$script_path" \
@@ -250,7 +251,7 @@ install_plantuml_server() {
 configure_plantuml_service() {
     log_header "PHASE 5: PlantUML Service Configuration"
 
-    local script_path="$PROJECT_ROOT/scripts/setup/configure-plantuml-service.sh"
+    local script_path="$PROJECT_ROOT/infrastructure/scripts/setup/configure-plantuml-service.sh"
 
     run_install_script \
         "$script_path" \
@@ -267,7 +268,7 @@ configure_plantuml_service() {
 configure_permissions() {
     log_header "PHASE 6: Permission Configuration"
 
-    local script_path="$PROJECT_ROOT/scripts/setup/configure-permissions.sh"
+    local script_path="$PROJECT_ROOT/infrastructure/scripts/setup/configure-permissions.sh"
 
     run_install_script \
         "$script_path" \
@@ -284,7 +285,7 @@ configure_permissions() {
 configure_tomcat_outputs() {
     log_header "PHASE 6.5: Tomcat Outputs Access"
 
-    local script_path="$PROJECT_ROOT/scripts/setup/configure-tomcat-outputs.sh"
+    local script_path="$PROJECT_ROOT/infrastructure/scripts/setup/configure-tomcat-outputs.sh"
 
     run_install_script \
         "$script_path" \
@@ -301,7 +302,7 @@ configure_tomcat_outputs() {
 configure_tomcat_docs() {
     log_header "PHASE 6.6: Tomcat Documentation Access"
 
-    local script_path="$PROJECT_ROOT/scripts/setup/configure-tomcat-docs.sh"
+    local script_path="$PROJECT_ROOT/infrastructure/scripts/setup/configure-tomcat-docs.sh"
 
     run_install_script \
         "$script_path" \
@@ -352,16 +353,16 @@ Place your pytm threat model Python files here.
 
 ```bash
 # Generate all models (as vagrant user)
-sudo -u threatmodel /vagrant/bin/generate
+sudo -u threatmodel /vagrant/infrastructure/bin/generate
 
 # Generate specific model
-sudo -u threatmodel /vagrant/bin/generate /vagrant/api/models/auth_model.py
+sudo -u threatmodel /vagrant/infrastructure/bin/generate /vagrant/api/models/auth_model.py
 
 # List available models
-sudo -u threatmodel /vagrant/bin/generate --list
+sudo -u threatmodel /vagrant/infrastructure/bin/generate --list
 
 # Generate with Plantweb (SVG output)
-sudo -u threatmodel /vagrant/bin/generate --plantweb
+sudo -u threatmodel /vagrant/infrastructure/bin/generate --plantweb
 ```
 
 ## Model Structure
@@ -438,8 +439,8 @@ configure_shell_environment() {
 
     local aliases_content="
 # Threat Modeling Project Aliases (with sudo)
-alias tm-generate='sudo -u $THREAT_MODEL_USER /vagrant/bin/generate'
-alias tm-list='sudo -u $THREAT_MODEL_USER /vagrant/bin/generate --list'
+alias tm-generate='sudo -u $THREAT_MODEL_USER /vagrant/infrastructure/bin/generate'
+alias tm-list='sudo -u $THREAT_MODEL_USER /vagrant/infrastructure/bin/generate --list'
 alias tm-models='cd /vagrant/$PROJECT_NAME/models'
 alias tm-output='cd /vagrant/$PROJECT_NAME/output'
 alias tm-root='cd /vagrant'
@@ -507,7 +508,7 @@ alias oci-socket-status='sudo systemctl status ${OCI_RUNTIME_SERVICE}'
 install_plantweb_aliases() {
     log_info "Installing Plantweb shell aliases..."
 
-    local source_file="$PROJECT_ROOT/config/shell/plantweb-aliases.sh"
+    local source_file="$PROJECT_ROOT/infrastructure/config/shell/plantweb-aliases.sh"
     local target_file="/etc/profile.d/plantweb-aliases.sh"
 
     if [[ ! -f "$source_file" ]]; then
@@ -533,7 +534,7 @@ install_plantweb_aliases() {
 install_oci_runtime_aliases() {
     log_info "Installing ${OCI_RUNTIME_NAME} shell aliases..."
 
-    local source_file="$PROJECT_ROOT/config/shell/oci-runtime-aliases.sh"
+    local source_file="$PROJECT_ROOT/infrastructure/config/shell/oci-runtime-aliases.sh"
     local target_file="/etc/profile.d/oci-runtime-aliases.sh"
 
     if [[ ! -f "$source_file" ]]; then

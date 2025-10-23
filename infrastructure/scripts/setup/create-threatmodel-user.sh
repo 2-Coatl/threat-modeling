@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# scripts/setup/create-threatmodel-user.sh
+# infrastructure/scripts/setup/create-threatmodel-user.sh
 # Create dedicated threatmodel system user
 
 set -euo pipefail

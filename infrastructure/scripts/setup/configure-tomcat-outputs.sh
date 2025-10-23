@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 ################################################################################
-# scripts/setup/configure-tomcat-outputs.sh
+# infrastructure/scripts/setup/configure-tomcat-outputs.sh
 #
 # Configure Tomcat to serve threat model outputs via web interface
 #
@@ -63,7 +63,7 @@ validate_prerequisites() {
     fi
 
     # Check if context template exists
-    local template="$PROJECT_ROOT/config/tomcat/outputs-context.xml"
+    local template="$PROJECT_ROOT/infrastructure/config/tomcat/outputs-context.xml"
     if [[ ! -f "$template" ]]; then
         log_error "Context template not found: $template"
         return 1
@@ -93,7 +93,7 @@ create_outputs_context() {
 
     local context_dir="$TOMCAT_HOME/conf/Catalina/localhost"
     local context_file="$context_dir/outputs.xml"
-    local template="$PROJECT_ROOT/config/tomcat/outputs-context.xml"
+    local template="$PROJECT_ROOT/infrastructure/config/tomcat/outputs-context.xml"
 
     # Create context directory if needed
     if [[ ! -d "$context_dir" ]]; then

@@ -6,7 +6,7 @@ Priority (highest to lowest):
 1. Explicit parameters in code
 2. Environment variables
 3. ~/.plantwebrc file
-4. Project config/plantweb.json
+4. Project infrastructure/config/plantweb.json
 5. Default values
 """
 
@@ -87,7 +87,7 @@ def _load_all_sources() -> Dict[str, Any]:
     config = DEFAULT_CONFIG.copy()
 
     # 1. Project config file (lowest priority after defaults)
-    project_config_path = Path('/vagrant/config/plantweb.json')
+    project_config_path = Path('/vagrant/infrastructure/config/plantweb.json')
     if project_config_path.exists():
         project_config = _load_from_file(project_config_path)
         config.update(project_config)

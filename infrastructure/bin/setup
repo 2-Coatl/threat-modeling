@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# bin/setup - Wrapper to bootstrap.sh
+# infrastructure/bin/setup - Wrapper to bootstrap.sh
 # Simple interface for users to run installation
 
 set -euo pipefail

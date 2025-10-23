@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# scripts/installation/install-plantweb.sh
+# infrastructure/scripts/installation/install-plantweb.sh
 # Install Plantweb Python client for PlantUML Server
 
 set -euo pipefail
@@ -236,7 +236,7 @@ EOF
     chmod 644 "$config_file"
 
     # Create project configuration
-    local project_config="$PROJECT_ROOT/config/plantweb.json"
+    local project_config="$PROJECT_ROOT/infrastructure/config/plantweb.json"
 
     log_info "Creating project configuration: $project_config"
 

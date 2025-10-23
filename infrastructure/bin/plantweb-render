@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# bin/plantweb-render - CLI wrapper for Plantweb module
+# infrastructure/bin/plantweb-render - CLI wrapper for Plantweb module
 # Provides command-line interface to render diagrams using PlantUML Server
 
 set -euo pipefail

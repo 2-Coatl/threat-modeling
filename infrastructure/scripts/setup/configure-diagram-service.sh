@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# scripts/setup/configure-diagram-service.sh
+# infrastructure/scripts/setup/configure-diagram-service.sh
 # Configure Diagram Service as systemd service
 
 set -euo pipefail

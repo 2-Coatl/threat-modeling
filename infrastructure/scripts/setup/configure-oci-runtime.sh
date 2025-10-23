@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# scripts/setup/configure-oci-runtime.sh
+# infrastructure/scripts/setup/configure-oci-runtime.sh
 # Configure system integration for the OCI runtime (Podman)
 
 set -euo pipefail

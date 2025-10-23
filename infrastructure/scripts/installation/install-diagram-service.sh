@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# scripts/installation/install-diagram-service.sh
+# infrastructure/scripts/installation/install-diagram-service.sh
 # Install Flask Diagram Service with versioning
 
 set -euo pipefail

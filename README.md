@@ -87,7 +87,7 @@ Esto asegura:
                           ▼
 ┌────────────────────────────────────────────────────────┐
 │           Generación de Modelos de Amenazas           │
-│    Usuario: threatmodel    Tool: bin/generate         │
+│    Usuario: threatmodel    Tool: infrastructure/bin/generate         │
 │    ├─ pytm (DFD via Graphviz)                         │
 │    ├─ PlantUML Server (Sequence via HTTP)             │
 │    └─ Pandoc (Reportes HTML)                          │
@@ -251,7 +251,7 @@ tm-root      # Va a raíz del proyecto
 tm-generate api/models/auth_model.py
 
 # O usando sudo directamente
-sudo -u threatmodel /vagrant/bin/generate api/models/auth_model.py
+sudo -u threatmodel /vagrant/infrastructure/bin/generate api/models/auth_model.py
 ```
 
 ### Ver Resultados
@@ -323,14 +323,7 @@ curl http://localhost:8080/outputs/
 
 ```
 threat-modeling-project/
-├── bin/
-│   ├── generate              # Script principal de generación
-│   └── setup                 # Ejecuta instalación
-│
 ├── bootstrap.sh              # Orquestador maestro
-│
-├── config/
-│   └── variables.sh          # Configuración global
 │
 ├── api/
 │   ├── models/               # Modelos de amenazas
@@ -348,27 +341,40 @@ threat-modeling-project/
 │       └── report_template.md
 │
 ├── infrastructure/
+│   ├── bin/
+│   │   ├── generate          # Script principal de generación
+│   │   └── setup             # Ejecuta instalación
+│   │
+│   ├── config/
+│   │   └── variables.sh      # Configuración global
+│   │
+│   ├── git/
+│   │   └── policy/           # Reglas y chequeos de git
+│   │
+│   ├── scripts/
+│   │   ├── installation/
+│   │   │   ├── install-system-dependencies.sh
+│   │   │   ├── install-pytm-framework.sh
+│   │   │   ├── install-tomcat.sh
+│   │   │   └── install-plantuml-server.sh
+│   │   │
+│   │   └── setup/
+│   │       ├── create-threatmodel-user.sh
+│   │       ├── configure-permissions.sh
+│   │       ├── configure-plantuml-service.sh
+│   │       └── configure-tomcat-outputs.sh
+│   │
+│   ├── system/
+│   │   └── diagram-service.service
+│   │
 │   ├── utils/
 │   │   ├── core.sh           # Funciones centrales
 │   │   ├── logging.sh        # Sistema de logging
 │   │   └── validation.sh     # Validaciones
-│   └── vagrant/
-│       └── Vagrantfile       # Configuración principal de la VM
-│
-├── scripts/
-│   ├── installation/
-│   │   ├── install-system-dependencies.sh
-│   │   ├── install-pytm-framework.sh
-│   │   ├── install-tomcat.sh
-│   │   └── install-plantuml-server.sh
 │   │
-│   └── setup/
-│       ├── create-threatmodel-user.sh
-│       ├── configure-permissions.sh
-│       ├── configure-plantuml-service.sh
-│       └── configure-tomcat-outputs.sh
+│   └── Vagrantfile           # Configuración principal de la VM
 │
-├── Vagrantfile               # Configuración de VM
+├── Vagrantfile               # Loader principal de Vagrant
 └── README.md                 # Este archivo
 ```
 
@@ -515,8 +521,8 @@ Después de ejecutar `vagrant ssh`:
 
 | Alias | Descripción | Equivalente |
 |-------|-------------|-------------|
-| `tm-generate` | Genera todos los modelos | `sudo -u threatmodel /vagrant/bin/generate` |
-| `tm-list` | Lista modelos disponibles | `sudo -u threatmodel /vagrant/bin/generate --list` |
+| `tm-generate` | Genera todos los modelos | `sudo -u threatmodel /vagrant/infrastructure/bin/generate` |
+| `tm-list` | Lista modelos disponibles | `sudo -u threatmodel /vagrant/infrastructure/bin/generate --list` |
 | `tm-models` | Va a directorio de modelos | `cd /vagrant/api/models` |
 | `tm-output` | Va a directorio de outputs | `cd /vagrant/api/output` |
 | `tm-root` | Va a raíz del proyecto | `cd /vagrant` |
@@ -601,13 +607,13 @@ curl http://localhost:8080/plantuml/
 
 ```bash
 # Verificar dependencias
-/vagrant/bin/generate --help
+/vagrant/infrastructure/bin/generate --help
 
 # Ver logs de generación
 sudo tail -f /var/log/api/threatmodel.log
 
 # Ejecutar como usuario correcto
-sudo -u threatmodel /vagrant/bin/generate
+sudo -u threatmodel /vagrant/infrastructure/bin/generate
 
 # Verificar permisos
 ls -la /vagrant/api/output/
@@ -623,7 +629,7 @@ ls -la /opt/tomcat/conf/Catalina/localhost/outputs.xml
 ls -la /vagrant/api/output/
 
 # Reconfigurar acceso a outputs
-sudo /vagrant/scripts/setup/configure-tomcat-outputs.sh
+sudo /vagrant/infrastructure/scripts/setup/configure-tomcat-outputs.sh
 
 # Reiniciar Tomcat
 sudo systemctl restart plantuml
@@ -668,7 +674,7 @@ curl http://localhost:8080/plantuml/
 ```bash
 # Opción 1: Limpiar estado y re-ejecutar
 sudo rm -rf /var/lib/api/state/
-sudo /vagrant/bin/setup
+sudo /vagrant/infrastructure/bin/setup
 
 # Opción 2: Destruir VM completamente
 exit  # Salir de la VM
@@ -682,7 +688,7 @@ vagrant up
 
 ### Archivo Principal de Configuración
 
-Ubicación: `config/variables.sh`
+Ubicación: `infrastructure/config/variables.sh`
 
 #### Variables Clave
 
@@ -742,7 +748,7 @@ Archivo: `/etc/sudoers.d/threatmodel`
 
 ```bash
 # Usuario vagrant puede ejecutar como threatmodel sin password
-vagrant ALL=(threatmodel) NOPASSWD: /vagrant/bin/generate
+vagrant ALL=(threatmodel) NOPASSWD: /vagrant/infrastructure/bin/generate
 vagrant ALL=(threatmodel) NOPASSWD: /usr/bin/python3
 
 # Deshabilitar requiretty para threatmodel
@@ -795,7 +801,7 @@ Webpack dentro de nuestro monolito modular.
 
 ```bash
 # Probar script específico
-sudo /vagrant/scripts/installation/install-tomcat.sh
+sudo /vagrant/infrastructure/scripts/installation/install-tomcat.sh
 
 # Probar solo generación
 tm-generate
@@ -871,7 +877,7 @@ sudo /vagrant/bootstrap.sh
 
 **Cambiado**:
 - Diagramas de secuencia ahora usan servicio web PlantUML
-- bin/generate usa API HTTP para PlantUML
+- infrastructure/bin/generate usa API HTTP para PlantUML
 - Proceso bootstrap incluye setup de Tomcat (8 fases)
 
 **Mejorado**:
@@ -885,7 +891,7 @@ sudo /vagrant/bootstrap.sh
 
 **Correcciones Críticas**:
 - Corregido problema con expresiones aritméticas en bash
-- Actualizado script bin/generate para POSIX compliance
+- Actualizado script infrastructure/bin/generate para POSIX compliance
 - Template de reportes simplificado
 - Eliminadas variables no soportadas del template
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# scripts/installation/install-plantuml-server.sh
+# infrastructure/scripts/installation/install-plantuml-server.sh
 # Install PlantUML Server WAR application
 
 set -euo pipefail

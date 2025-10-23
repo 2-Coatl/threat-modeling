@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# scripts/installation/install-pytm-framework.sh
+# infrastructure/scripts/installation/install-pytm-framework.sh
 # Install pytm framework and PlantUML
 
 set -euo pipefail

@@ -1,11 +1,11 @@
 #!/bin/bash
-# config/shell/plantweb-aliases.sh
+# infrastructure/config/shell/plantweb-aliases.sh
 # Shell aliases for Plantweb
 # This file will be copied to /etc/profile.d/ during bootstrap
 
 # Plantweb rendering commands
-alias plantweb-render='/vagrant/bin/plantweb-render'
-alias plantweb-test='bash /vagrant/scripts/test-plantweb.sh'
+alias plantweb-render='/vagrant/infrastructure/bin/plantweb-render'
+alias plantweb-test='bash /vagrant/infrastructure/scripts/test-plantweb.sh'
 
 # Configuration commands
 alias plantweb-config='plantweb-render --config'
