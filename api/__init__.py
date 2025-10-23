@@ -1,0 +1,1 @@
+"""Flask diagram API package."""

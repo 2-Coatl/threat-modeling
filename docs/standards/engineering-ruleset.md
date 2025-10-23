@@ -3,7 +3,7 @@
 This ruleset consolidates the conventions that guide our monolithic-but-modular
 stack.  It adapts our legacy standards to the technologies we use today:
 Bash-based automation, Python (Flask + PyTM), PlantUML generation, and the
-React/SCSS/Webpack front end.  Treat this as a living document – prefer
+React/SCSS/Webpack UI.  Treat this as a living document – prefer
 pragmatism and clarity over dogmatism.
 
 ## 1. Core Principles
@@ -16,7 +16,7 @@ pragmatism and clarity over dogmatism.
    rather than overloading an existing file.
 3. **Clarity over cleverness.**  Prefer descriptive names and explicit control
    flow.  Optimize only after measuring.
-4. **Monolith, modularized.**  Keep backend, frontend, and infrastructure in
+4. **Monolith, modularized.**  Keep backend, UI, and infrastructure in
    this repository, but respect clear boundaries between modules.
 
 ## 2. Repository Structure Expectations
@@ -24,17 +24,22 @@ pragmatism and clarity over dogmatism.
 ```
 /                    # Monorepo root
 ├── bootstrap.sh     # Provisioning orchestrator (Bash)
-├── scripts/         # Installation, setup, test, and CI helpers (Bash)
-├── infrastructure/  # Shared shell utilities, policy tooling, system assets
-├── config/          # Global variables, shell profiles, templates
-├── dashboard/       # Python Flask + PyTM application (monolith core)
+├── infrastructure/  # Automation, system assets, and shared tooling
+│   ├── bin/         # CLI entrypoints (Bash wrappers, installers)
+│   ├── config/      # Global variables, shell profiles, templates
+│   ├── git/         # Policy tooling and Git helpers
+│   ├── scripts/     # Installation, setup, test, and CI helpers (Bash)
+│   ├── system/      # OS/service units (systemd, etc.)
+│   ├── utils/       # Shared shell helpers
+│   └── Vagrantfile  # Configuración principal de la VM
+├── api/            # Python Flask + PyTM application (monolith core)
 │   ├── plantweb/    # PlantUML helpers and CLI
 │   ├── templates/   # Flask Jinja templates
 │   ├── static/
 │   │   ├── js/      # React bundles (Webpack output)
 │   │   └── css/     # Compiled SCSS
 │   └── models/      # Threat modeling domain modules
-└── frontend/        # Source for React + SCSS (Webpack build input)
+└── ui/            # Source for React + SCSS (Webpack build input)
     ├── src/
     │   ├── components/
     │   ├── hooks/
@@ -43,9 +48,9 @@ pragmatism and clarity over dogmatism.
     └── webpack/    # Build configuration and tooling
 ```
 
-*Create `frontend/` directories as needed when the web client evolves.  Backend
-Flask blueprints live inside `dashboard/` and should expose narrow interfaces to
-frontend bundles via REST endpoints.*
+*Create `ui/` directories as needed when the web client evolves.  Backend
+Flask blueprints live inside `api/` and should expose narrow interfaces to
+UI bundles via REST endpoints.*
 
 ## 3. Naming Conventions
 
@@ -64,27 +69,29 @@ Additional rules:
 - Prefix private helpers with `_` in Python and `__` in SCSS (BEM modifiers).
 - Constants use `UPPER_SNAKE_CASE` in Python/TypeScript and `readonly` exports
   when possible.
-- Test modules mirror the file under test (`test_dashboard_api.py`,
+- Test modules mirror the file under test (`test_api_routes.py`,
   `App.spec.tsx`).
 
 ## 4. Layering Rules
 
 1. **Presentation (React/Flask routes)** must depend only on application
-   services defined in `dashboard/services/` or feature modules.  They never
+   services defined in `api/services/` or feature modules.  They never
    perform direct infrastructure work.
-2. **Domain/Business logic** (`dashboard/models/`, `dashboard/services/`) should
+2. **Domain/Business logic** (`api/models/`, `api/services/`) should
    be framework-agnostic.  PlantUML or PyTM orchestration belongs here when it
    represents business rules.
 3. **Infrastructure utilities** (shell installers, adapters, file IO) remain in
-   `infrastructure/` or `scripts/`.  Python infrastructure adapters belong in
-   `dashboard/integrations/`.
-4. **Front end** consumes REST/JSON endpoints.  Shared DTOs live in
-   `dashboard/api/schema.py` and `frontend/src/types/`.
+   `infrastructure/` (CLI wrappers under `infrastructure/bin/`, workflows under
+   `infrastructure/scripts/`).  Python infrastructure adapters belong in
+   `api/integrations/`.
+4. **UI layer** consumes REST/JSON endpoints.  Shared DTOs live in
+   `api/schema.py` and `ui/src/types/`.
 
 ## 5. Bash Standards
 
 - Always start scripts with `#!/usr/bin/env bash` and `set -euo pipefail`.
-- Source `config/variables.sh` when global paths or user settings are needed.
+- Source `infrastructure/config/variables.sh` when global paths or user settings
+  are needed.
 - Avoid silent failures: validate inputs, exit with non-zero codes, and use
   `[INFO]/[WARN]/[ERROR]/[SUCCESS]` prefixes.
 - Keep functions <= 40 lines.  Extract helpers to `infrastructure/utils/*.sh`
@@ -95,11 +102,12 @@ Additional rules:
 ## 6. Python (Flask + PyTM) Standards
 
 - Follow PEP 8 and use type hints for all public functions.  Run `python3 -m
-  py_compile` (covered by `scripts/ci/run-policy-checks.sh`).
-- Flask blueprints reside in `dashboard/api/`.  Each blueprint file defines a
+  py_compile` (covered by
+  `infrastructure/scripts/ci/run-policy-checks.sh`).
+- Flask blueprints reside in `api/`.  Each blueprint file defines a
   `create_blueprint()` factory.
-- Business logic for threat modeling lives in `dashboard/models/` or
-  `dashboard/services/`.  PyTM integration functions should avoid Flask imports
+- Business logic for threat modeling lives in `api/models/` or
+  `api/services/`.  PyTM integration functions should avoid Flask imports
   to remain testable.
 - Use Google-style docstrings for modules, classes, and functions that form the
   public API.
@@ -108,25 +116,26 @@ Additional rules:
 
 ## 7. PlantUML and Diagram Automation
 
-- Store canonical `.puml` templates under `dashboard/plantweb/templates/`.
-- Generated diagrams belong under `dashboard/output/diagrams/` and must not be
+- Store canonical `.puml` templates under `api/plantweb/templates/`.
+- Generated diagrams belong under `api/output/diagrams/` and must not be
   tracked in Git.
-- Use `scripts/test-plantweb.sh` when adding templates or CLI options.
-- Keep PlantUML include paths relative to `dashboard/plantweb/` to avoid
+- Use `infrastructure/scripts/test-plantweb.sh` when adding templates or CLI
+  options.
+- Keep PlantUML include paths relative to `api/plantweb/` to avoid
   hard-coded absolute directories.
 
 ## 8. React + SCSS + Webpack Standards
 
-- Source files live in `frontend/src/`.  Use functional components with hooks.
+- Source files live in `ui/src/`.  Use functional components with hooks.
 - Prefer atomic components (`components/`) assembled by feature pages
   (`pages/`).
 - Styling follows BEM via SCSS modules (`Component.module.scss`).  Shared design
-  tokens live in `frontend/src/styles/tokens.scss`.
-- Webpack configuration files reside in `frontend/webpack/`.  Provide separate
+  tokens live in `ui/src/styles/tokens.scss`.
+- Webpack configuration files reside in `ui/webpack/`.  Provide separate
   configs for development and production; share common options via
   `webpack.common.js`.
 - Lint via `npm run lint` (wrap ESLint + Stylelint) and `npm run test` (Jest).
-  Integrate these commands into shell wrappers when the frontend is introduced.
+  Integrate these commands into shell wrappers when the ui is introduced.
 
 ## 9. Logging and Output Policy
 
@@ -138,8 +147,10 @@ Additional rules:
 ## 10. Git Hygiene
 
 - Conventional Commits enforced by `.githooks/commit-msg`.
-- Hooks live in `.githooks/`; run `bin/setup` once to configure `core.hooksPath`.
-- Run `scripts/ci/run-policy-checks.sh` locally before opening PRs.
+- Hooks live in `.githooks/`; run `infrastructure/bin/setup` once to configure
+  `core.hooksPath`.
+- Run `infrastructure/scripts/ci/run-policy-checks.sh` locally before opening
+  PRs.
 - Binary artifacts, generated diagrams, build outputs, and environment-specific
   files stay out of Git.  Update `.gitignore` if new tools are introduced.
 
@@ -148,20 +159,21 @@ Additional rules:
 | Layer          | Tooling / Command                                     |
 |----------------|-------------------------------------------------------|
 | Bash           | `bash -n`, targeted integration tests per script      |
-| Python backend | `pytest` (to be added) + `scripts/ci/run-policy-checks.sh` |
-| React frontend | `npm run test -- --watch=false` (Jest)                |
+| Python backend | `pytest` (to be added) + `infrastructure/scripts/ci/run-policy-checks.sh` |
+| React ui | `npm run test -- --watch=false` (Jest)                |
 | Styling        | `npm run lint:styles` (Stylelint)                     |
-| Diagrams       | `scripts/test-plantweb.sh`                            |
+| Diagrams       | `infrastructure/scripts/test-plantweb.sh`             |
 
 - Add tests before or alongside new functionality.
-- Keep integration tests under `scripts/test-*` or `dashboard/tests/`.
+- Keep integration tests under `infrastructure/scripts/test-*` or `api/tests/`.
 
 ## 12. Pull Request Checklist
 
 - [ ] Code follows naming and layering rules.
-- [ ] New scripts source `config/variables.sh` when needed and log professionally.
-- [ ] `scripts/ci/run-policy-checks.sh` passes locally.
-- [ ] Tests added/updated for backend (`pytest`) and frontend (`npm run test`).
+- [ ] New scripts source `infrastructure/config/variables.sh` when needed and
+      log professionally.
+- [ ] `infrastructure/scripts/ci/run-policy-checks.sh` passes locally.
+- [ ] Tests added/updated for backend (`pytest`) and ui (`npm run test`).
 - [ ] Documentation updates accompany structural or workflow changes.
 - [ ] No secrets, generated diagrams, or build artifacts committed.
 

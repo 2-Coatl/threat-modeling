@@ -73,7 +73,7 @@ load_project_environment() {
         export PROJECT_ROOT
     fi
 
-    local vars_file="$PROJECT_ROOT/config/variables.sh"
+    local vars_file="$PROJECT_ROOT/infrastructure/config/variables.sh"
     if [[ ! -f "$vars_file" ]]; then
         echo "CRITICAL: variables.sh not found at: $vars_file" >&2
         return 1
