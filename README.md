@@ -6,10 +6,10 @@ Sistema automatizado para modelado de amenazas utilizando el framework OWASP pyt
 
 ```bash
 # 1. Iniciar VM
-vagrant up
+make vm-up
 
 # 2. Acceder a la VM
-vagrant ssh
+make vm-ssh
 
 # 3. Generar modelos de amenazas
 tm-generate
@@ -17,6 +17,8 @@ tm-generate
 # 4. Ver resultados en el navegador
 # Abrir: http://localhost:8080/outputs/
 ```
+
+> **Nota**: El archivo de configuración de Vagrant vive en `infrastructure/Vagrantfile`. Los comandos de `make` sólo envuelven a Vagrant y permiten ejecutarlo desde la raíz del repositorio.
 
 ## Tabla de Contenidos
 
@@ -168,8 +170,10 @@ cd threat-modeling-project
 ### Paso 2: Iniciar VM
 
 ```bash
-vagrant up
+make vm-up
 ```
+
+> También puedes ejecutar `vagrant up` dentro del directorio `infrastructure/` si prefieres usar Vagrant directamente.
 
 Esto ejecutará automáticamente:
 - Creación del usuario `threatmodel`
@@ -187,7 +191,7 @@ Esto ejecutará automáticamente:
 ### Paso 3: Verificar Instalación
 
 ```bash
-vagrant ssh
+make vm-ssh
 
 # Verificar Python y pytm
 python3 --version
@@ -227,9 +231,9 @@ El bootstrap ejecuta estas fases automáticamente:
 
 ```bash
 # Acceder a la VM
-vagrant ssh
+make vm-ssh
 
-# Generar todos los modelos
+# Generar todos los modelos (ya dentro de la VM)
 tm-generate
 
 # Listar modelos disponibles
@@ -273,7 +277,7 @@ ls -lh /vagrant/api/output/reports/
 
 ### Desde la Máquina Host
 
-Después de ejecutar `vagrant up`, estas URLs están disponibles:
+Después de iniciar la VM con `make vm-up` (o `vagrant up` dentro de `infrastructure/`), estas URLs están disponibles:
 
 #### PlantUML Server
 
@@ -374,7 +378,7 @@ threat-modeling-project/
 │   │
 │   └── Vagrantfile           # Configuración principal de la VM
 │
-├── Vagrantfile               # Loader principal de Vagrant
+├── Makefile                  # Atajos para ejecutar Vagrant desde la raíz
 └── README.md                 # Este archivo
 ```
 
@@ -517,7 +521,7 @@ El sistema incluye tres modelos completos como referencia:
 
 ### Aliases de Shell
 
-Después de ejecutar `vagrant ssh`:
+Después de conectarte con `make vm-ssh` (o `vagrant ssh` desde `infrastructure/`):
 
 | Alias | Descripción | Equivalente |
 |-------|-------------|-------------|
@@ -639,11 +643,11 @@ sudo systemctl restart plantuml
 
 ```bash
 # Test desde dentro de VM
-vagrant ssh
+make vm-ssh
 curl http://localhost:8080/plantuml/
 
 # Desde host, verificar port forwarding
-vagrant reload
+make vm-reload
 
 # Verificar en VirtualBox
 # Devices -> Network -> Adapter 1 -> Port Forwarding
@@ -678,8 +682,8 @@ sudo /vagrant/infrastructure/bin/setup
 
 # Opción 2: Destruir VM completamente
 exit  # Salir de la VM
-vagrant destroy -f
-vagrant up
+make vm-destroy
+make vm-up
 ```
 
 ---
