@@ -96,7 +96,7 @@ Esto asegura:
                           ▼
 ┌────────────────────────────────────────────────────────┐
 │              Almacenamiento de Outputs                 │
-│    /vagrant/dashboard/output/                          │
+│    /vagrant/api/output/                          │
 │    ├─ diagrams/ (archivos PNG)                        │
 │    └─ reports/  (archivos HTML)                       │
 └────────────────────────────────────────────────────────┘
@@ -248,10 +248,10 @@ tm-root      # Va a raíz del proyecto
 
 ```bash
 # Generar un modelo específico
-tm-generate dashboard/models/auth_model.py
+tm-generate api/models/auth_model.py
 
 # O usando sudo directamente
-sudo -u threatmodel /vagrant/bin/generate dashboard/models/auth_model.py
+sudo -u threatmodel /vagrant/bin/generate api/models/auth_model.py
 ```
 
 ### Ver Resultados
@@ -263,8 +263,8 @@ sudo -u threatmodel /vagrant/bin/generate dashboard/models/auth_model.py
 # http://localhost:8080/outputs/reports/
 
 # Opción 2: Desde línea de comandos
-ls -lh /vagrant/dashboard/output/diagrams/
-ls -lh /vagrant/dashboard/output/reports/
+ls -lh /vagrant/api/output/diagrams/
+ls -lh /vagrant/api/output/reports/
 ```
 
 ---
@@ -332,7 +332,7 @@ threat-modeling-project/
 ├── config/
 │   └── variables.sh          # Configuración global
 │
-├── dashboard/
+├── api/
 │   ├── models/               # Modelos de amenazas
 │   │   ├── auth_model.py
 │   │   ├── comms_model.py
@@ -348,10 +348,12 @@ threat-modeling-project/
 │       └── report_template.md
 │
 ├── infrastructure/
-│   └── utils/
-│       ├── core.sh           # Funciones centrales
-│       ├── logging.sh        # Sistema de logging
-│       └── validation.sh     # Validaciones
+│   ├── utils/
+│   │   ├── core.sh           # Funciones centrales
+│   │   ├── logging.sh        # Sistema de logging
+│   │   └── validation.sh     # Validaciones
+│   └── vagrant/
+│       └── Vagrantfile       # Configuración principal de la VM
 │
 ├── scripts/
 │   ├── installation/
@@ -376,10 +378,10 @@ threat-modeling-project/
 
 ### Paso 1: Crear Archivo de Modelo
 
-Crea un archivo en `dashboard/models/` que termine con `_model.py`:
+Crea un archivo en `api/models/` que termine con `_model.py`:
 
 ```bash
-cd /vagrant/dashboard/models
+cd /vagrant/api/models
 vim mi_sistema_model.py
 ```
 
@@ -441,7 +443,7 @@ if __name__ == "__main__":
 cd /vagrant
 
 # Generar este modelo específico
-tm-generate dashboard/models/mi_sistema_model.py
+tm-generate api/models/mi_sistema_model.py
 
 # O generar todos los modelos
 tm-generate
@@ -515,10 +517,10 @@ Después de ejecutar `vagrant ssh`:
 |-------|-------------|-------------|
 | `tm-generate` | Genera todos los modelos | `sudo -u threatmodel /vagrant/bin/generate` |
 | `tm-list` | Lista modelos disponibles | `sudo -u threatmodel /vagrant/bin/generate --list` |
-| `tm-models` | Va a directorio de modelos | `cd /vagrant/dashboard/models` |
-| `tm-output` | Va a directorio de outputs | `cd /vagrant/dashboard/output` |
+| `tm-models` | Va a directorio de modelos | `cd /vagrant/api/models` |
+| `tm-output` | Va a directorio de outputs | `cd /vagrant/api/output` |
 | `tm-root` | Va a raíz del proyecto | `cd /vagrant` |
-| `tm-logs` | Ver logs en tiempo real | `sudo tail -f /var/log/dashboard/threatmodel.log` |
+| `tm-logs` | Ver logs en tiempo real | `sudo tail -f /var/log/api/threatmodel.log` |
 
 ### Aliases de PlantUML/Tomcat
 
@@ -602,13 +604,13 @@ curl http://localhost:8080/plantuml/
 /vagrant/bin/generate --help
 
 # Ver logs de generación
-sudo tail -f /var/log/dashboard/threatmodel.log
+sudo tail -f /var/log/api/threatmodel.log
 
 # Ejecutar como usuario correcto
 sudo -u threatmodel /vagrant/bin/generate
 
 # Verificar permisos
-ls -la /vagrant/dashboard/output/
+ls -la /vagrant/api/output/
 ```
 
 ### Outputs No Visibles en Navegador
@@ -618,7 +620,7 @@ ls -la /vagrant/dashboard/output/
 ls -la /opt/tomcat/conf/Catalina/localhost/outputs.xml
 
 # Verificar permisos
-ls -la /vagrant/dashboard/output/
+ls -la /vagrant/api/output/
 
 # Reconfigurar acceso a outputs
 sudo /vagrant/scripts/setup/configure-tomcat-outputs.sh
@@ -665,7 +667,7 @@ curl http://localhost:8080/plantuml/
 
 ```bash
 # Opción 1: Limpiar estado y re-ejecutar
-sudo rm -rf /var/lib/dashboard/state/
+sudo rm -rf /var/lib/api/state/
 sudo /vagrant/bin/setup
 
 # Opción 2: Destruir VM completamente
@@ -686,7 +688,7 @@ Ubicación: `config/variables.sh`
 
 ```bash
 # Proyecto
-PROJECT_NAME="dashboard"
+PROJECT_NAME="api"
 
 # Usuarios
 THREAT_MODEL_USER="threatmodel"
@@ -701,10 +703,10 @@ PLANTUML_WAR_VERSION="v1.2025.7"
 PLANTUML_SERVER="http://localhost:8080/plantuml"
 
 # Rutas
-MODELS_DIR="/vagrant/dashboard/models"
-OUTPUT_DIR="/vagrant/dashboard/output"
-DIAGRAMS_DIR="/vagrant/dashboard/output/diagrams"
-REPORTS_DIR="/vagrant/dashboard/output/reports"
+MODELS_DIR="/vagrant/api/models"
+OUTPUT_DIR="/vagrant/api/output"
+DIAGRAMS_DIR="/vagrant/api/output/diagrams"
+REPORTS_DIR="/vagrant/api/output/reports"
 ```
 
 ### Variables de Entorno
@@ -751,10 +753,10 @@ Defaults:threatmodel !requiretty
 
 | Ruta | Owner | Group | Permisos | Descripción |
 |------|-------|-------|----------|-------------|
-| `/var/log/dashboard/` | threatmodel | threatmodel | 755 | Logs del sistema |
-| `/var/lib/dashboard/state/` | threatmodel | threatmodel | 755 | Estado de instalación |
+| `/var/log/api/` | threatmodel | threatmodel | 755 | Logs del sistema |
+| `/var/lib/api/state/` | threatmodel | threatmodel | 755 | Estado de instalación |
 | `/opt/tomcat/` | tomcat | tomcat | 755 | Instalación de Tomcat |
-| `/vagrant/dashboard/output/` | threatmodel | threatmodel | 775 | Outputs generados |
+| `/vagrant/api/output/` | threatmodel | threatmodel | 775 | Outputs generados |
 
 ### Usuarios del Sistema
 
@@ -770,7 +772,7 @@ Defaults:threatmodel !requiretty
 
 ### Agregar Nuevos Modelos
 
-1. Crear archivo en `dashboard/models/mi_modelo_model.py`
+1. Crear archivo en `api/models/mi_modelo_model.py`
 2. Seguir estructura de ejemplos
 3. Ejecutar `tm-generate`
 4. Verificar en `http://localhost:8080/outputs/`
@@ -849,8 +851,8 @@ sudo /vagrant/bootstrap.sh
 |------|-------|-----------|
 | /vagrant | vagrant | Carpeta sincronizada (host <-> VM) |
 | /opt/tomcat | tomcat | Instalación de Tomcat |
-| /var/log/dashboard | threatmodel | Logs de generación |
-| /var/lib/dashboard | threatmodel | Archivos de estado |
+| /var/log/api | threatmodel | Logs de generación |
+| /var/lib/api | threatmodel | Archivos de estado |
 
 ---
 
@@ -913,7 +915,7 @@ MIT License
 ## Soporte
 
 Para problemas o preguntas:
-- Revisar logs: `/var/log/dashboard/threatmodel.log`
+- Revisar logs: `/var/log/api/threatmodel.log`
 - Ver logs de Tomcat: `/opt/tomcat/logs/catalina.out`
 - Verificar estado: `sudo systemctl status plantuml`
 - Abrir issue en el repositorio

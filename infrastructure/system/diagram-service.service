@@ -9,7 +9,7 @@ User=threatmodel
 Group=threatmodel
 
 # Working directory
-WorkingDirectory=/vagrant/dashboard
+WorkingDirectory=/vagrant/api
 
 # Environment variables
 Environment="PYTHONUNBUFFERED=1"

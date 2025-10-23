@@ -200,7 +200,7 @@ deliver_to_agent.protocol = "WebSocket"
 deliver_to_agent.data = chat_message
 deliver_to_agent.isEncrypted = True
 deliver_to_agent.order = 6
-deliver_to_agent.note = "Message delivered to agent's dashboard"
+deliver_to_agent.note = "Message delivered to agent's API"
 
 # Flow 7: Agent responds
 agent_response = Dataflow(

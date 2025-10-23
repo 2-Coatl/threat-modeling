@@ -12,7 +12,7 @@ from pathlib import Path
 # Add project to path
 sys.path.insert(0, '/vagrant')
 
-from dashboard.plantweb import render, configure
+from api.plantweb import render, configure
 
 
 def main():
@@ -46,7 +46,7 @@ Alice <-- Bob: Another authentication Response
 """
 
     # Output path
-    output_path = Path("/vagrant/dashboard/output/diagrams/example_basic.svg")
+    output_path = Path("/vagrant/api/output/diagrams/example_basic.svg")
 
     print("Rendering diagram...")
     print(f"  Input: PlantUML code ({len(plantuml_code)} chars)")

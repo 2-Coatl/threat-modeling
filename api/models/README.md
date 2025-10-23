@@ -13,7 +13,7 @@ Place your pytm threat model Python files here.
 ./bin/generate
 
 # Generate specific model
-./bin/generate dashboard/models/auth_model.py
+./bin/generate api/models/auth_model.py
 
 # List available models
 ./bin/generate --list

@@ -20,7 +20,7 @@ from pytm import (
 # ============================================================================
 
 tm = TM("Call Center Authentication System")
-tm.description = "Authentication and authorization flow for call center agents accessing the dashboard"
+tm.description = "Authentication and authorization flow for call center agents accessing the API"
 tm.isOrdered = True
 
 # ============================================================================
@@ -42,7 +42,7 @@ internal.description = "Trusted internal corporate network"
 
 agent = Actor("Call Center Agent")
 agent.inBoundary = internet
-agent.description = "Employee accessing the call center dashboard from remote location"
+agent.description = "Employee accessing the call center API from remote location"
 
 # ============================================================================
 # SERVERS (Application Components)
@@ -56,7 +56,7 @@ web_app.providesAuthentication = True
 web_app.providesAuthorization = True
 web_app.protocol = "HTTPS"
 web_app.port = 443
-web_app.description = "Frontend web application serving the call center dashboard"
+web_app.description = "Frontend web application serving the call center API"
 
 auth_service = Server("Authentication Service")
 auth_service.inBoundary = internal

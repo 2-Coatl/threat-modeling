@@ -80,14 +80,14 @@ try:
     print(f'[OK] plantweb package: {plantweb.__version__}')
 
     # Test our module
-    from dashboard.plantweb import render, configure
-    print('[OK] dashboard.plantweb module')
+    from api.plantweb import render, configure
+    print('[OK] api.plantweb module')
 
     # Test submodules
-    from dashboard.plantweb.config import get_config
-    from dashboard.plantweb.renderer import encode_plantuml
-    from dashboard.plantweb.cache import get_cache_stats
-    from dashboard.plantweb.pytm_adapter import render_pytm_seq
+    from api.plantweb.config import get_config
+    from api.plantweb.renderer import encode_plantuml
+    from api.plantweb.cache import get_cache_stats
+    from api.plantweb.pytm_adapter import render_pytm_seq
     print('[OK] All submodules importable')
 
 except ImportError as e:
@@ -129,7 +129,7 @@ test_module_configuration() {
 import sys
 sys.path.insert(0, '/vagrant')
 
-from dashboard.plantweb import get_config, configure
+from api.plantweb import get_config, configure
 
 # Get default config
 config = get_config()
@@ -172,7 +172,7 @@ EOF
 import sys
 sys.path.insert(0, '/vagrant')
 
-from dashboard.plantweb import render_file
+from api.plantweb import render_file
 
 try:
     result = render_file('$test_file', '$output_file')
@@ -210,8 +210,8 @@ test_cache_functionality() {
 import sys
 sys.path.insert(0, '/vagrant')
 
-from dashboard.plantweb import get_cache_stats, clear_cache
-from dashboard.plantweb.cache import get_cached, save_to_cache
+from api.plantweb import get_cache_stats, clear_cache
+from api.plantweb.cache import get_cached, save_to_cache
 
 # Get stats
 stats = get_cache_stats()
@@ -276,7 +276,7 @@ sys.path.insert(0, '/vagrant')
 
 try:
     from pytm import TM, Actor, Server, Dataflow
-    from dashboard.plantweb import extract_plantuml_from_pytm
+    from api.plantweb import extract_plantuml_from_pytm
 
     # Create simple model
     tm = TM('Test')

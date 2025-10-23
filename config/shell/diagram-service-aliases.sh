@@ -16,21 +16,21 @@ alias diagram-health='curl -s http://localhost:5000/health | python3 -m json.too
 alias diagram-open='xdg-open http://localhost:5000 2>/dev/null || echo "Open http://localhost:5000 in your browser"'
 
 # Directory navigation
-alias diagram-dir='cd /vagrant/dashboard'
-alias diagram-history='cd /vagrant/dashboard/history'
-alias diagram-templates='cd /vagrant/dashboard/templates'
+alias diagram-dir='cd /vagrant/api'
+alias diagram-history='cd /vagrant/api/history'
+alias diagram-templates='cd /vagrant/api/templates'
 
 # Logs
 alias diagram-access-log='sudo tail -f /var/log/diagram-service/access.log'
 alias diagram-error-log='sudo tail -f /var/log/diagram-service/error.log'
 
 # Git history commands
-alias diagram-git='cd /vagrant/dashboard/history && git'
-alias diagram-git-log='cd /vagrant/dashboard/history && git log --oneline --graph --all'
-alias diagram-git-status='cd /vagrant/dashboard/history && git status'
+alias diagram-git='cd /vagrant/api/history && git'
+alias diagram-git-log='cd /vagrant/api/history && git log --oneline --graph --all'
+alias diagram-git-status='cd /vagrant/api/history && git status'
 
 # Development
-alias diagram-dev='cd /vagrant/dashboard && python3 app.py'
+alias diagram-dev='cd /vagrant/api && python3 app.py'
 alias diagram-test='curl -s http://localhost:5000/api/diagrams | python3 -m json.tool'
 
 # Help
