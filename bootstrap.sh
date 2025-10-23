@@ -355,7 +355,7 @@ Place your pytm threat model Python files here.
 sudo -u threatmodel /vagrant/bin/generate
 
 # Generate specific model
-sudo -u threatmodel /vagrant/bin/generate /vagrant/dashboard/models/auth_model.py
+sudo -u threatmodel /vagrant/bin/generate /vagrant/api/models/auth_model.py
 
 # List available models
 sudo -u threatmodel /vagrant/bin/generate --list
@@ -631,7 +631,7 @@ run_final_verification() {
     fi
 
     log_info "Verifying Plantweb module..."
-    if python3 -c "import sys; sys.path.insert(0, '/vagrant'); from dashboard.plantweb import render" 2>/dev/null; then
+    if python3 -c "import sys; sys.path.insert(0, '/vagrant'); from api.plantweb import render" 2>/dev/null; then
         log_success "  Plantweb module: OK"
         ((checks_passed++))
     else

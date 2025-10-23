@@ -15,13 +15,13 @@ fi
 PROJECT_ROOT="${PROJECT_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 
 # Project name
-readonly PROJECT_NAME="dashboard"
+readonly PROJECT_NAME="api"
 
 # Main directories
-readonly APP_BASE_DIR="/opt/dashboard"
-readonly APP_LOG_DIR="/var/log/dashboard"
-readonly APP_STATE_DIR="/var/lib/dashboard/state"
-readonly APP_CACHE_DIR="/var/cache/dashboard"
+readonly APP_BASE_DIR="/opt/api"
+readonly APP_LOG_DIR="/var/log/api"
+readonly APP_STATE_DIR="/var/lib/api/state"
+readonly APP_CACHE_DIR="/var/cache/api"
 
 # Project structure
 readonly MODELS_DIR="${PROJECT_ROOT}/${PROJECT_NAME}/models"
@@ -109,7 +109,7 @@ readonly ALLOWED_COMMANDS=(
 # SYSTEM CONFIGURATION
 # ============================================================================
 
-# Debian frontend (for apt-get)
+# Debian UI (for apt-get)
 export DEBIAN_FRONTEND=noninteractive
 
 # ============================================================================

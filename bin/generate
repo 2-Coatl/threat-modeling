@@ -632,7 +632,7 @@ EXAMPLES:
     tm-generate
 
     # Generate specific model
-    tm-generate dashboard/models/auth_model.py
+    tm-generate api/models/auth_model.py
 
     # Use custom PlantUML server
     PLANTUML_SERVER=http://localhost:8080/plantuml tm-generate
@@ -641,9 +641,9 @@ EXAMPLES:
     tm-list
 
 OUTPUT:
-    Diagrams: dashboard/output/diagrams/ (owner: threatmodel)
-    Reports:  dashboard/output/reports/  (owner: threatmodel)
-    Logs:     /var/log/dashboard/threatmodel.log   (owner: threatmodel)
+    Diagrams: api/output/diagrams/ (owner: threatmodel)
+    Reports:  api/output/reports/  (owner: threatmodel)
+    Logs:     /var/log/api/threatmodel.log   (owner: threatmodel)
 
     Web Access:
     http://localhost:8080/outputs/diagrams/

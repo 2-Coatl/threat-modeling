@@ -11,7 +11,7 @@ JAR local. Incluye integración específica para pytm (Python Threat
 Modeling).
 
 Uso básico:
-    from dashboard.plantweb import render, configure
+    from api.plantweb import render, configure
 
     # Configurar (opcional)
     configure(server_url="http://localhost:8080/plantuml/")
@@ -20,8 +20,8 @@ Uso básico:
     render("@startuml\\nAlice -> Bob\\n@enduml", "output.svg")
 
 Uso con pytm:
-    from dashboard.plantweb import render_pytm_model
-    from dashboard.models.auth_model import tm
+    from api.plantweb import render_pytm_model
+    from api.models.auth_model import tm
 
     # Renderizar modelo completo
     render_pytm_model(tm, output_dir="./diagrams")

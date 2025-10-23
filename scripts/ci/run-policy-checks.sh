@@ -28,7 +28,7 @@ else
 fi
 
 printf '[INFO] Compiling Python modules...\n'
-mapfile -t python_files < <(git ls-files '*.py' ':!dashboard/diagram_service.py')
+mapfile -t python_files < <(git ls-files '*.py')
 if [[ ${#python_files[@]} -eq 0 ]]; then
     printf '[INFO] No Python modules detected.\n'
 else

@@ -296,7 +296,7 @@ def api_list_diagrams():
 
 def get_all_diagrams():
     """Get list of all diagrams with metadata"""
-    history_dir = Path('/vagrant/dashboard/history')
+    history_dir = Path(getattr(diagram_service, 'history_dir', '/vagrant/api/history'))
 
     if not history_dir.exists():
         return []

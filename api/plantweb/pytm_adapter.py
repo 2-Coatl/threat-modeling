@@ -123,7 +123,7 @@ def render_pytm_seq(
 
     Example:
         from pytm import TM
-        from dashboard.plantweb import render_pytm_seq
+        from api.plantweb import render_pytm_seq
 
         tm = TM("My Model")
         # ... define model ...
@@ -170,7 +170,7 @@ def render_pytm_model(
 
     Example:
         from pytm import TM
-        from dashboard.plantweb import render_pytm_model
+        from api.plantweb import render_pytm_model
 
         tm = TM("My Model")
         # ... define model ...

@@ -78,7 +78,7 @@ fi
 # CONSTANTS
 # =============================================================================
 
-DIAGRAM_SERVICE_DIR="$PROJECT_ROOT/dashboard"
+DIAGRAM_SERVICE_DIR="$PROJECT_ROOT/api"
 HISTORY_DIR="$DIAGRAM_SERVICE_DIR/history"
 TEMPLATES_DIR="$DIAGRAM_SERVICE_DIR/templates"
 STATIC_DIR="$DIAGRAM_SERVICE_DIR/static"
@@ -181,7 +181,7 @@ configure_permissions() {
 
     log_info "Setting ownership and permissions..."
 
-    # Set ownership for dashboard directory
+    # Set ownership for api directory
     chown -R "$THREAT_MODEL_USER:$THREAT_MODEL_GROUP" "$DIAGRAM_SERVICE_DIR" 2>/dev/null || true
 
     # Make Python files executable

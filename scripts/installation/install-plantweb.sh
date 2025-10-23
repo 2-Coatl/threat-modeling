@@ -83,7 +83,7 @@ try:
 
     # Test our module import
     sys.path.insert(0, '/vagrant')
-    from dashboard.plantweb import configure, render as pw_render
+    from api.plantweb import configure, render as pw_render
 
     sys.exit(0)
 except ImportError as e:
@@ -267,7 +267,7 @@ EOF
 create_module_structure() {
     log_step "5" "5" "Verifying module structure"
 
-    local module_dir="$PROJECT_ROOT/dashboard/plantweb"
+    local module_dir="$PROJECT_ROOT/api/plantweb"
 
     if [[ ! -d "$module_dir" ]]; then
         log_error "Module directory not found: $module_dir"
@@ -334,7 +334,7 @@ main() {
 
         log_info "Installation details:"
         log_info "  Package: plantweb (PyPI)"
-        log_info "  Module: dashboard.plantweb"
+        log_info "  Module: api.plantweb"
         log_info "  Config: ${HOME}/.plantwebrc"
         log_info "  Cache: ${HOME}/.cache/plantweb"
 

@@ -2,7 +2,7 @@
 <!--
   Tomcat Context Configuration for Threat Model Outputs
 
-  Purpose: Serve static files from /vagrant/dashboard/output via Tomcat
+  Purpose: Serve static files from /vagrant/api/output via Tomcat
   Path:    /opt/tomcat/conf/Catalina/localhost/outputs.xml
   Access:  http://localhost:8080/outputs/
 
@@ -19,7 +19,7 @@
 -->
 <Context
     path="/outputs"
-    docBase="/vagrant/dashboard/output"
+    docBase="/vagrant/api/output"
     reloadable="false"
     privileged="false"
     antiResourceLocking="false">

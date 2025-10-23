@@ -87,7 +87,7 @@ User=$THREAT_MODEL_USER
 Group=$THREAT_MODEL_GROUP
 
 # Working directory
-WorkingDirectory=$PROJECT_ROOT/dashboard
+WorkingDirectory=$PROJECT_ROOT/api
 
 # Environment variables
 Environment="PYTHONUNBUFFERED=1"
@@ -287,8 +287,8 @@ Log files:
 
 Configuration:
   - Service: /etc/systemd/system/diagram-service.service
-  - App Dir: $PROJECT_ROOT/dashboard
-  - History: $PROJECT_ROOT/dashboard/history
+  - App Dir: $PROJECT_ROOT/api
+  - History: $PROJECT_ROOT/api/history
 
 ------------------------------------------------------------
 EOF
