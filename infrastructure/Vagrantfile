@@ -1,109 +1,298 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-PROJECT_ROOT = File.expand_path('..', __dir__) unless defined?(PROJECT_ROOT)
+require 'fileutils'
 
-Vagrant.configure("2") do |config|
-  # ===========================================================================
-  # BASE BOX
-  # ===========================================================================
+# PlantUML 4+1 Architecture Stack
+# Dual-Machine Configuration: nginx01 + tomcat01
+# Environment files are optional: baked-in defaults cover the local workflow
 
-  config.vm.box = "ubuntu/focal64"
-  config.vm.box_check_update = false
+# Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
+VAGRANTFILE_API_VERSION = "2"
 
-  # ===========================================================================
-  # NETWORK CONFIGURATION
-  # ===========================================================================
+# Load environment variables from .env file if it exists
+def load_env_file(env_file)
+  env_vars = {}
+  if File.exist?(env_file)
+    File.foreach(env_file) do |line|
+      line.strip!
+      next if line.empty? || line.start_with?('#')
+      key, value = line.split('=', 2)
+      env_vars[key] = value.gsub(/^["']|["']$/, '') if key && value
+    end
+  end
+  env_vars
+end
 
-  config.vm.network "private_network", ip: "192.168.56.10"
+# Local defaults keep Vagrant usable when no .env files are present
+DEFAULT_ENVIRONMENT = {
+  'NETWORK_SUBNET' => '192.168.56.0',
+  'LOAD_BALANCER_IP' => '192.168.56.10',
+  'APPLICATION_SERVER_IP' => '192.168.56.11',
+  'HTTP_PORT' => '8080',
+  'HTTPS_PORT' => '8443',
+  'NGINX_MEMORY' => '1024',
+  'NGINX_CPUS' => '1',
+  'TOMCAT_MEMORY' => '2048',
+  'TOMCAT_CPUS' => '2',
+  'ENABLE_PROVISIONING' => 'true',
+  'ENABLE_DEBUG' => 'false'
+}.freeze
 
-  # Port forwarding for PlantUML Server
-  config.vm.network "forwarded_port", guest: 8080, host: 8080, host_ip: "127.0.0.1"
+# Load environment variables - hierarchy with optional overrides
+# 1. Built-in defaults
+# 2. .env (user customization)
+# 3. .env.development (shared defaults)
+env_vars = DEFAULT_ENVIRONMENT.dup
 
-  # ===========================================================================
-  # HOSTNAME
-  # ===========================================================================
+if File.exist?('.env')
+  puts "INFO: Loading configuration from .env"
+  env_vars.merge!(load_env_file('.env'))
+elsif File.exist?('.env.development')
+  puts "INFO: Loading configuration from .env.development (no .env found)"
+  env_vars.merge!(load_env_file('.env.development'))
+else
+  puts "INFO: No .env file detected. Using built-in development defaults."
+end
 
-  config.vm.hostname = "threat-modeling"
+# Configuration variables - defaults may be overridden by env files
+NETWORK_SUBNET = env_vars['NETWORK_SUBNET']
+NGINX_IP = env_vars['LOAD_BALANCER_IP']
+TOMCAT_IP = env_vars['APPLICATION_SERVER_IP']
+HTTP_PORT = env_vars['HTTP_PORT']
+HTTPS_PORT = env_vars['HTTPS_PORT']
+NGINX_MEMORY = env_vars['NGINX_MEMORY']
+NGINX_CPUS = env_vars['NGINX_CPUS']
+TOMCAT_MEMORY = env_vars['TOMCAT_MEMORY']
+TOMCAT_CPUS = env_vars['TOMCAT_CPUS']
 
-  # ===========================================================================
-  # SYNCED FOLDER
-  # ===========================================================================
+# Boolean configuration - Also from env_vars / defaults
+ENABLE_PROVISIONING = env_vars['ENABLE_PROVISIONING'] != 'false'
+ENABLE_DEBUG = env_vars['ENABLE_DEBUG'] == 'true'
 
-  config.vm.synced_folder PROJECT_ROOT, "/vagrant"
+# Display loaded configuration
+puts "CONFIGURATION LOADED:"
+puts "  Network: #{NETWORK_SUBNET}"
+puts "  nginx01: #{NGINX_IP} (#{NGINX_MEMORY}MB, #{NGINX_CPUS} CPU)"
+puts "  tomcat01: #{TOMCAT_IP} (#{TOMCAT_MEMORY}MB, #{TOMCAT_CPUS} CPU)"
+puts "  Ports: HTTP #{HTTP_PORT}, HTTPS #{HTTPS_PORT}"
+puts "  Provisioning: #{ENABLE_PROVISIONING}, Debug: #{ENABLE_DEBUG}"
 
-  # ===========================================================================
-  # PROVIDER CONFIGURATION (VirtualBox)
-  # ===========================================================================
+# Local cache function for apt packages (speeds up reprovisioning)
+def local_cache(box_name)
+  begin
+    cache_dir = File.join(File.expand_path('~/.vagrant.d'), 'cache', 'apt', box_name)
+    partial_dir = File.join(cache_dir, 'partial')
 
-  config.vm.provider "virtualbox" do |vb|
-    vb.name = "threat-modeling-vm"
-    vb.memory = "2048"
-    vb.cpus = 2
+    # Create cache directories if they don't exist
+    FileUtils.mkdir_p(cache_dir) unless File.exist?(cache_dir)
+    FileUtils.mkdir_p(partial_dir) unless File.exist?(partial_dir)
 
-    # DNS resolution fixes
-    vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
-    vb.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
+    # Check if cache directory is writable
+    unless File.writable?(cache_dir)
+      puts "WARNING: Cache directory #{cache_dir} is not writable."
+      puts "Cache will be disabled. Run: mkdir -p #{cache_dir} && chmod 755 #{cache_dir}"
+      return nil
+    end
 
-    # Prevent time drift
-    vb.customize ["guestproperty", "set", :id, "/VirtualBox/GuestAdd/VBoxService/--timesync-set-threshold", 10000]
+    cache_dir
+  rescue => e
+    puts "WARNING: Failed to create apt cache directory: #{e.message}"
+    puts "Cache will be disabled. Continuing without cache..."
+    nil
+  end
+end
+
+# Synced folders configuration
+def setup_synced_folders(config)
+  # Carpetas principales del proyecto
+  folders_config = [
+    { path: "./api", fmode: "755" },
+    { path: "./ui", fmode: "755" },
+    { path: "./infrastructure", fmode: "755" }
+  ]
+
+  folders_config.each do |folder|
+    folder_name = File.basename(folder[:path])
+    config.vm.synced_folder folder[:path], "/vagrant/#{folder_name}",
+      create: true, mount_options: ["dmode=755,fmode=#{folder[:fmode]}"]
   end
 
-  # ===========================================================================
-  # PROVISIONING
-  # ===========================================================================
+  # Logs folder
+  config.vm.synced_folder "./logs", "/vagrant/logs",
+    create: true, mount_options: ["dmode=755,fmode=644"]
 
-  config.vm.provision "shell", inline: <<-SHELL
-    set -euo pipefail
+  # Solo .env (NO sincronización completa del root)
+  setup_env_sync(config)
+end
 
-    export DEBIAN_FRONTEND=noninteractive
+# .env file specific sync
+def setup_env_sync(config)
+  env_temp_dir = ".vagrant-env-sync"
+  Dir.mkdir(env_temp_dir) unless Dir.exist?(env_temp_dir)
 
-    echo "=== Starting Threat Modeling System Installation ==="
+  if File.exist?('.env')
+    FileUtils.cp('.env', File.join(env_temp_dir, '.env'))
+  elsif File.exist?('.env.development')
+    FileUtils.cp('.env.development', File.join(env_temp_dir, '.env'))
+  end
 
-    # Navigate to project directory
-    cd /vagrant
+  config.vm.synced_folder env_temp_dir, "/vagrant",
+    create: true, mount_options: ["dmode=755,fmode=644"]
+end
 
-    # Execute bootstrap
-    if bash bootstrap.sh; then
-      echo "[SUCCESS] Bootstrap completed"
-    else
-      echo "[ERROR] Bootstrap failed" >&2
-      exit 1
-    fi
-  SHELL
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  # Base box configuration - Ubuntu 20.04 LTS
+  config.vm.box = "ubuntu/focal64"
+  config.vm.box_version = ">= 20240821.0.0"
+  config.vm.box_check_update = true
 
-  # ===========================================================================
-  # POST-UP MESSAGE
-  # ===========================================================================
+  # SSH configuration
+  config.ssh.forward_agent = true
+  config.ssh.insert_key = false
 
-  config.vm.post_up_message = <<-MSG
-    ------------------------------------------------------------
-       Threat Modeling VM Ready
-    ------------------------------------------------------------
+  # APT cache configuration for faster reprovisioning
+  cache_dir = local_cache(config.vm.box)
+  if cache_dir
+    puts "INFO: Using apt cache directory: #{cache_dir}"
+    config.vm.synced_folder cache_dir, "/var/cache/apt/archives/",
+      create: true,
+      mount_options: ["dmode=755,fmode=644"],
+      type: "virtualbox"
+  else
+    puts "INFO: APT cache disabled - packages will be downloaded fresh each time"
+  end
 
-    Access the VM:
-      vagrant ssh
+  # Disable default /vagrant sync to improve performance
+  config.vm.synced_folder ".", "/vagrant", disabled: true
 
-    PlantUML Server:
-      Host:   http://localhost:8080/plantuml/
-      VM:     http://192.168.56.10:8080/plantuml/
-      Status: plantuml-status (from inside VM)
+  # Setup all synced folders
+  setup_synced_folders(config)
 
-    Generate threat models:
-      cd /vagrant
-      ./bin/generate
+  # Global VirtualBox provider configuration
+  config.vm.provider "virtualbox" do |vb|
+    vb.gui = false
+    vb.linked_clone = true
+    vb.check_guest_additions = false
 
-    View outputs:
-      /vagrant/api/output/diagrams/
-      /vagrant/api/output/reports/
+    # Performance optimizations
+    vb.customize ["modifyvm", :id, "--ioapic", "on"]
+    vb.customize ["modifyvm", :id, "--hwvirtex", "on"]
+    vb.customize ["modifyvm", :id, "--vtxvpid", "on"]
+    vb.customize ["modifyvm", :id, "--largepages", "on"]
+    vb.customize ["modifyvm", :id, "--nestedpaging", "on"]
 
-    Useful commands:
-      ./bin/generate --list    # List available models
-      ./bin/generate --help    # Show help
-      ./bin/setup              # Re-run installation
+    # Network performance
+    vb.customize ["modifyvm", :id, "--nictype1", "virtio"]
+    vb.customize ["modifyvm", :id, "--nictype2", "virtio"]
+  end
 
-    Documentation:
-      /vagrant/README.md
+  config.vm.define "nginx01", primary: true do |nginx|
+    # Basic VM configuration - ALL FROM .env
+    nginx.vm.hostname = "nginx01"
+    nginx.vm.network "private_network", ip: NGINX_IP, netmask: "255.255.255.0"
 
-  MSG
+    # Port forwarding - ALL FROM .env
+    nginx.vm.network "forwarded_port", guest: 80, host: HTTP_PORT,
+      host_ip: "127.0.0.1", id: "http"
+    nginx.vm.network "forwarded_port", guest: 443, host: HTTPS_PORT,
+      host_ip: "127.0.0.1", id: "https"
+
+    # Resource allocation - ALL FROM .env
+    nginx.vm.provider "virtualbox" do |vb|
+      vb.name = "plantuml-4plus1-nginx01"
+      vb.memory = NGINX_MEMORY.to_i  # Convert from .env string to integer
+      vb.cpus = NGINX_CPUS.to_i      # Convert from .env string to integer
+
+      # nginx-specific optimizations
+      vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+      vb.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
+    end
+
+    # Message with actual configured values from .env
+    nginx.vm.post_up_message = <<-MESSAGE
+    ========================================
+    nginx01 VM Ready - Basic Configuration
+    ========================================
+    IP Address: #{NGINX_IP}
+    HTTP Port:  #{HTTP_PORT} (host forward)
+    HTTPS Port: #{HTTPS_PORT} (host forward)
+    SSH:        vagrant ssh nginx01
+    Resources:  #{NGINX_MEMORY}MB RAM, #{NGINX_CPUS} CPU(s)
+
+    NEXT STEPS: Implement T007-T015B methodology
+    ========================================
+    MESSAGE
+  end
+
+  # ==========================================================================
+  # TOMCAT01 VM - Application Server
+  # ALL CONFIGURATION FROM .env - NO HARDCODED VALUES
+  # ==========================================================================
+  config.vm.define "tomcat01" do |tomcat|
+    # Basic VM configuration - ALL FROM .env
+    tomcat.vm.hostname = "tomcat01"
+    tomcat.vm.network "private_network", ip: TOMCAT_IP, netmask: "255.255.255.0"
+
+    # Resource allocation - ALL FROM .env
+    tomcat.vm.provider "virtualbox" do |vb|
+      vb.name = "plantuml-4plus1-tomcat01"
+      vb.memory = TOMCAT_MEMORY.to_i  # Convert from .env string to integer
+      vb.cpus = TOMCAT_CPUS.to_i      # Convert from .env string to integer
+
+      # Java/Tomcat-specific optimizations
+      vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+      vb.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
+
+      # Memory and CPU optimizations for Java workload
+      vb.customize ["modifyvm", :id, "--paravirtprovider", "default"]
+    end
+
+    # Message with actual configured values from .env
+    tomcat.vm.post_up_message = <<-MESSAGE
+    ========================================
+    tomcat01 VM Ready - Basic Configuration
+    ========================================
+    IP Address: #{TOMCAT_IP}
+    SSH:        vagrant ssh tomcat01
+    Resources:  #{TOMCAT_MEMORY}MB RAM, #{TOMCAT_CPUS} CPU(s)
+
+    NEXT STEPS: Implement T007-T015B methodology
+    ========================================
+    MESSAGE
+  end
+
+  if ENABLE_PROVISIONING
+    config.vm.provision "shell", privileged: false, inline: <<-SHELL
+      set -euo pipefail
+
+      export DEBIAN_FRONTEND=noninteractive
+
+      echo "=== Starting Threat Modeling System Installation ==="
+
+      cd /vagrant/infrastructure
+
+      if bash ./bootstrap.sh; then
+        echo "[SUCCESS] Bootstrap completed"
+      else
+        echo "[ERROR] Bootstrap failed" >&2
+        exit 1
+      fi
+    SHELL
+  else
+    puts "INFO: Provisioning disabled via ENABLE_PROVISIONING=false"
+  end
+
+  # ==========================================================================
+  # GLOBAL POST-PROVISIONING MESSAGE
+  # ALL VALUES FROM .env - COMPLETELY DYNAMIC
+  # ==========================================================================
+
+  # Global completion message with actual configuration from .env
+  config.vm.post_up_message = <<-MESSAGE
+
+  ============================================================================
+  PlantUML 4+1 Architecture Stack - VMs
+  ============================================================================
+  MESSAGE
 end

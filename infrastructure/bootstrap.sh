@@ -7,8 +7,9 @@ set -euo pipefail
 # INITIALIZATION
 # =============================================================================
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$SCRIPT_DIR"
+readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly INFRASTRUCTURE_ROOT="$SCRIPT_DIR"
+readonly PROJECT_ROOT="$(cd "${INFRASTRUCTURE_ROOT}/.." && pwd)"
 
 # =============================================================================
 # LOAD ENVIRONMENT

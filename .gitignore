@@ -47,3 +47,4 @@ coverage/
 # Terraform / Vagrant caches
 *.box
 .vagrant/
+.vagrant-env-sync/

@@ -327,8 +327,6 @@ curl http://localhost:8080/outputs/
 
 ```
 threat-modeling-project/
-├── bootstrap.sh              # Orquestador maestro
-│
 ├── api/
 │   ├── models/               # Modelos de amenazas
 │   │   ├── auth_model.py
@@ -345,6 +343,7 @@ threat-modeling-project/
 │       └── report_template.md
 │
 ├── infrastructure/
+│   ├── bootstrap.sh          # Orquestador maestro
 │   ├── bin/
 │   │   ├── generate          # Script principal de generación
 │   │   └── setup             # Ejecuta instalación
@@ -811,7 +810,7 @@ sudo /vagrant/infrastructure/scripts/installation/install-tomcat.sh
 tm-generate
 
 # Prueba completa del sistema
-sudo /vagrant/bootstrap.sh
+sudo /vagrant/infrastructure/bootstrap.sh
 ```
 
 ---
