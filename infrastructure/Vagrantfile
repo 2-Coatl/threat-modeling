@@ -2,6 +2,7 @@
 # vi: set ft=ruby :
 
 require 'fileutils'
+require_relative 'lib/environment_config'
 
 # PlantUML 4+1 Architecture Stack
 # Dual-Machine Configuration: nginx01 + tomcat01
@@ -10,21 +11,7 @@ require 'fileutils'
 # Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
 VAGRANTFILE_API_VERSION = "2"
 
-# Load environment variables from .env file if it exists
-def load_env_file(env_file)
-  env_vars = {}
-  if File.exist?(env_file)
-    File.foreach(env_file) do |line|
-      line.strip!
-      next if line.empty? || line.start_with?('#')
-      key, value = line.split('=', 2)
-      env_vars[key] = value.gsub(/^["']|["']$/, '') if key && value
-    end
-  end
-  env_vars
-end
-
-# Local defaults keep Vagrant usable when no .env files are present
+# Local defaults keep Vagrant usable without external configuration files
 DEFAULT_ENVIRONMENT = {
   'NETWORK_SUBNET' => '192.168.56.0',
   'LOAD_BALANCER_IP' => '192.168.56.10',
@@ -39,23 +26,14 @@ DEFAULT_ENVIRONMENT = {
   'ENABLE_DEBUG' => 'false'
 }.freeze
 
-# Load environment variables - hierarchy with optional overrides
-# 1. Built-in defaults
-# 2. .env (user customization)
-# 3. .env.development (shared defaults)
-env_vars = DEFAULT_ENVIRONMENT.dup
+# Load environment variables - defaults with optional overrides from the
+# process environment. This keeps Vagrant deterministic without requiring
+# project-level configuration files.
+env_vars = EnvironmentConfig.load(DEFAULT_ENVIRONMENT)
 
-if File.exist?('.env')
-  puts "INFO: Loading configuration from .env"
-  env_vars.merge!(load_env_file('.env'))
-elsif File.exist?('.env.development')
-  puts "INFO: Loading configuration from .env.development (no .env found)"
-  env_vars.merge!(load_env_file('.env.development'))
-else
-  puts "INFO: No .env file detected. Using built-in development defaults."
-end
+puts "INFO: Using configuration sourced from environment variables where provided."
 
-# Configuration variables - defaults may be overridden by env files
+# Configuration variables - defaults may be overridden by environment variables
 NETWORK_SUBNET = env_vars['NETWORK_SUBNET']
 NGINX_IP = env_vars['LOAD_BALANCER_IP']
 TOMCAT_IP = env_vars['APPLICATION_SERVER_IP']
@@ -121,24 +99,6 @@ def setup_synced_folders(config)
   # Logs folder
   config.vm.synced_folder "./logs", "/vagrant/logs",
     create: true, mount_options: ["dmode=755,fmode=644"]
-
-  # Solo .env (NO sincronización completa del root)
-  setup_env_sync(config)
-end
-
-# .env file specific sync
-def setup_env_sync(config)
-  env_temp_dir = ".vagrant-env-sync"
-  Dir.mkdir(env_temp_dir) unless Dir.exist?(env_temp_dir)
-
-  if File.exist?('.env')
-    FileUtils.cp('.env', File.join(env_temp_dir, '.env'))
-  elsif File.exist?('.env.development')
-    FileUtils.cp('.env.development', File.join(env_temp_dir, '.env'))
-  end
-
-  config.vm.synced_folder env_temp_dir, "/vagrant",
-    create: true, mount_options: ["dmode=755,fmode=644"]
 end
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
@@ -188,28 +148,28 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   end
 
   config.vm.define "nginx01", primary: true do |nginx|
-    # Basic VM configuration - ALL FROM .env
+    # Basic VM configuration - driven by environment-aware settings
     nginx.vm.hostname = "nginx01"
     nginx.vm.network "private_network", ip: NGINX_IP, netmask: "255.255.255.0"
 
-    # Port forwarding - ALL FROM .env
+    # Port forwarding - customizable through environment variables
     nginx.vm.network "forwarded_port", guest: 80, host: HTTP_PORT,
       host_ip: "127.0.0.1", id: "http"
     nginx.vm.network "forwarded_port", guest: 443, host: HTTPS_PORT,
       host_ip: "127.0.0.1", id: "https"
 
-    # Resource allocation - ALL FROM .env
+    # Resource allocation - customizable through environment variables
     nginx.vm.provider "virtualbox" do |vb|
       vb.name = "plantuml-4plus1-nginx01"
-      vb.memory = NGINX_MEMORY.to_i  # Convert from .env string to integer
-      vb.cpus = NGINX_CPUS.to_i      # Convert from .env string to integer
+      vb.memory = NGINX_MEMORY.to_i  # Convert from configuration string to integer
+      vb.cpus = NGINX_CPUS.to_i      # Convert from configuration string to integer
 
       # nginx-specific optimizations
       vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
       vb.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
     end
 
-    # Message with actual configured values from .env
+    # Message with the resolved configuration
     nginx.vm.post_up_message = <<-MESSAGE
     ========================================
     nginx01 VM Ready - Basic Configuration
@@ -227,18 +187,18 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # ==========================================================================
   # TOMCAT01 VM - Application Server
-  # ALL CONFIGURATION FROM .env - NO HARDCODED VALUES
+  # Configuration derived from environment variables or defaults
   # ==========================================================================
   config.vm.define "tomcat01" do |tomcat|
-    # Basic VM configuration - ALL FROM .env
+    # Basic VM configuration - driven by environment-aware settings
     tomcat.vm.hostname = "tomcat01"
     tomcat.vm.network "private_network", ip: TOMCAT_IP, netmask: "255.255.255.0"
 
-    # Resource allocation - ALL FROM .env
+    # Resource allocation - customizable through environment variables
     tomcat.vm.provider "virtualbox" do |vb|
       vb.name = "plantuml-4plus1-tomcat01"
-      vb.memory = TOMCAT_MEMORY.to_i  # Convert from .env string to integer
-      vb.cpus = TOMCAT_CPUS.to_i      # Convert from .env string to integer
+      vb.memory = TOMCAT_MEMORY.to_i  # Convert from configuration string to integer
+      vb.cpus = TOMCAT_CPUS.to_i      # Convert from configuration string to integer
 
       # Java/Tomcat-specific optimizations
       vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
@@ -248,7 +208,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       vb.customize ["modifyvm", :id, "--paravirtprovider", "default"]
     end
 
-    # Message with actual configured values from .env
+    # Message with the resolved configuration
     tomcat.vm.post_up_message = <<-MESSAGE
     ========================================
     tomcat01 VM Ready - Basic Configuration
@@ -285,10 +245,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # ==========================================================================
   # GLOBAL POST-PROVISIONING MESSAGE
-  # ALL VALUES FROM .env - COMPLETELY DYNAMIC
+  # Values reflect environment overrides or built-in defaults
   # ==========================================================================
 
-  # Global completion message with actual configuration from .env
+  # Global completion message with the resolved configuration
   config.vm.post_up_message = <<-MESSAGE
 
   ============================================================================
