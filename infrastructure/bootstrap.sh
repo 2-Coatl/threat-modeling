@@ -9,7 +9,7 @@ set -euo pipefail
 
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly INFRASTRUCTURE_ROOT="$SCRIPT_DIR"
-readonly PROJECT_ROOT="$(cd "${INFRASTRUCTURE_ROOT}/.." && pwd)"
+PROJECT_ROOT="$(cd "${INFRASTRUCTURE_ROOT}/.." && pwd)"
 
 # =============================================================================
 # LOAD ENVIRONMENT
