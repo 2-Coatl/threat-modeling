@@ -18,13 +18,21 @@ else
 fi
 
 printf '[INFO] Running shell syntax checks...\n'
-mapfile -t shell_files < <(git ls-files '*.sh' 'bootstrap.sh' 'infrastructure/bin/*')
+mapfile -t shell_files < <(git ls-files '*.sh' 'infrastructure/bootstrap.sh' 'infrastructure/bin/*')
 if [[ ${#shell_files[@]} -eq 0 ]]; then
     printf '[INFO] No shell scripts detected.\n'
 else
     for file in "${shell_files[@]}"; do
         bash -n "$file"
     done
+fi
+
+printf '[INFO] Validating Vagrantfile syntax...\n'
+if [[ -f "infrastructure/Vagrantfile" ]]; then
+    ruby -c infrastructure/Vagrantfile >/dev/null
+    printf '[SUCCESS] Vagrantfile syntax valid.\n'
+else
+    printf '[WARN] infrastructure/Vagrantfile not found; skipping Ruby syntax check.\n'
 fi
 
 printf '[INFO] Compiling Python modules...\n'
