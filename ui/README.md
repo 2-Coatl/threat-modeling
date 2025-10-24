@@ -12,13 +12,25 @@ ui/
 │   ├── components/       # Layout primitives shared by feature modules
 │   ├── hooks/            # Shared hooks (configuration, data, etc.)
 │   ├── modules/          # Feature slices that register themselves with the shell
+│   ├── state/            # Redux store, reducers, and selectors shared by modules
 │   └── pages/            # Route-level React components composed from modules
 ├── babel.config.cjs      # Babel presets (React + modern JavaScript)
 ├── webpack.config.cjs    # Bundler entry point and shared build settings
 └── package.json          # npm metadata, scripts, and dependency manifest
 ```
 
-Each feature module exposes its public surface through an `index.js` barrel file so the shell can mount it without creating tight coupling between packages. Shared styling lives in `src/styles/global.css` to keep feature-specific styles colocated with the module code.
+Each feature module exposes its public surface through an `index.js` barrel file so the shell can mount it without creating tight coupling between packages. Shared styling lives in `src/styles/global.css` to keep feature-specific styles colocated with the module code. Cross-cutting state flows through a centrally configured Redux Toolkit store under `src/state/`, while feature slices colocate their reducers (for example `src/modules/home/state/`).
+
+## State management
+
+The UI shell boots a Redux Toolkit store (`src/state/store.js`) that wires together app-wide slices—such as `appConfig`—with reducers contributed by feature modules. Modules connect through `react-redux` hooks and expose selectors to keep their internal data contracts stable.
+
+```jsx
+// src/modules/home/hooks/useHomeAnnouncement.js
+const { announcement, cycleAnnouncement } = useHomeAnnouncement();
+```
+
+Shared hooks like `useAppConfig` wrap selectors so the shell can broadcast product-wide settings without leaking implementation details about the store topology.
 
 ## Local development
 

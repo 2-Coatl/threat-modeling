@@ -19,7 +19,8 @@ module.exports = {
       '@modules': path.resolve(__dirname, 'src/modules'),
       '@components': path.resolve(__dirname, 'src/components'),
       '@hooks': path.resolve(__dirname, 'src/hooks'),
-      '@styles': path.resolve(__dirname, 'src/styles')
+      '@styles': path.resolve(__dirname, 'src/styles'),
+      '@state': path.resolve(__dirname, 'src/state')
     }
   },
   module: {
