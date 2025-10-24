@@ -1,6 +1,8 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+PROJECT_ROOT = File.expand_path('..', __dir__) unless defined?(PROJECT_ROOT)
+
 Vagrant.configure("2") do |config|
   # ===========================================================================
   # BASE BOX
@@ -28,7 +30,7 @@ Vagrant.configure("2") do |config|
   # SYNCED FOLDER
   # ===========================================================================
 
-  config.vm.synced_folder ".", "/vagrant"
+  config.vm.synced_folder PROJECT_ROOT, "/vagrant"
 
   # ===========================================================================
   # PROVIDER CONFIGURATION (VirtualBox)
