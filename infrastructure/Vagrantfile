@@ -122,6 +122,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # Disable default /vagrant sync to improve performance
   config.vm.synced_folder ".", "/vagrant", disabled: true
 
+  # Explicitly disable the legacy UI share so Vagrant doesn't recreate it
+  config.vm.synced_folder File.join(PROJECT_ROOT, 'ui'), "/vagrant/ui", disabled: true
+
   # Setup synced folders without helper indirection so the configuration is
   # immediately visible alongside the rest of the VM definition.
   SYNCED_FOLDERS.each do |folder|
@@ -231,7 +234,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   end
 
   if ENABLE_PROVISIONING
-    config.vm.provision "shell", privileged: false, inline: <<-SHELL
+    config.vm.provision "shell", privileged: true, inline: <<-SHELL
       set -euo pipefail
 
       export DEBIAN_FRONTEND=noninteractive
