@@ -5,7 +5,8 @@
   "description": "Modular monolith front-end for the threat modeling platform.",
   "scripts": {
     "start": "webpack serve --config webpack.config.cjs --env development",
-    "build": "webpack --config webpack.config.cjs --env production"
+    "build": "webpack --config webpack.config.cjs --env production",
+    "test": "npm run build"
   },
   "dependencies": {
     "react": "^18.3.1",
