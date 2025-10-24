@@ -5,7 +5,7 @@ require 'fileutils'
 
 # PlantUML 4+1 Architecture Stack
 # Dual-Machine Configuration: nginx01 + tomcat01
-# TRUE SINGLE SOURCE OF TRUTH: All configuration from .env files
+# Environment files are optional: baked-in defaults cover the local workflow
 
 # Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
 VAGRANTFILE_API_VERSION = "2"
@@ -24,49 +24,38 @@ def load_env_file(env_file)
   env_vars
 end
 
-# Load environment variables - STRICT HIERARCHY
-# 1. .env (user customization)
-# 2. .env.development (development defaults)
-# 3. FAIL if neither exists (force explicit configuration)
-env_vars = {}
+# Local defaults keep Vagrant usable when no .env files are present
+DEFAULT_ENVIRONMENT = {
+  'NETWORK_SUBNET' => '192.168.56.0',
+  'LOAD_BALANCER_IP' => '192.168.56.10',
+  'APPLICATION_SERVER_IP' => '192.168.56.11',
+  'HTTP_PORT' => '8080',
+  'HTTPS_PORT' => '8443',
+  'NGINX_MEMORY' => '1024',
+  'NGINX_CPUS' => '1',
+  'TOMCAT_MEMORY' => '2048',
+  'TOMCAT_CPUS' => '2',
+  'ENABLE_PROVISIONING' => 'true',
+  'ENABLE_DEBUG' => 'false'
+}.freeze
+
+# Load environment variables - hierarchy with optional overrides
+# 1. Built-in defaults
+# 2. .env (user customization)
+# 3. .env.development (shared defaults)
+env_vars = DEFAULT_ENVIRONMENT.dup
 
 if File.exist?('.env')
   puts "INFO: Loading configuration from .env"
-  env_vars = load_env_file('.env')
+  env_vars.merge!(load_env_file('.env'))
 elsif File.exist?('.env.development')
   puts "INFO: Loading configuration from .env.development (no .env found)"
-  env_vars = load_env_file('.env.development')
+  env_vars.merge!(load_env_file('.env.development'))
 else
-  puts "ERROR: No environment configuration found!"
-  puts "REQUIRED: Copy .env.template to .env and configure your settings"
-  puts "COMMAND: cp .env.template .env"
-  abort("Environment configuration required - see above")
+  puts "INFO: No .env file detected. Using built-in development defaults."
 end
 
-# Validate critical variables exist - NO HARDCODED FALLBACKS
-required_vars = [
-  'NETWORK_SUBNET',
-  'LOAD_BALANCER_IP',
-  'APPLICATION_SERVER_IP',
-  'HTTP_PORT',
-  'HTTPS_PORT',
-  'NGINX_MEMORY',
-  'NGINX_CPUS',
-  'TOMCAT_MEMORY',
-  'TOMCAT_CPUS'
-]
-
-missing_vars = required_vars.select { |var| !env_vars.key?(var) || env_vars[var].empty? }
-
-unless missing_vars.empty?
-  puts "ERROR: Missing required environment variables:"
-  missing_vars.each { |var| puts "  - #{var}" }
-  puts "SOLUTION: Ensure all variables are set in your .env file"
-  puts "REFERENCE: Check .env.template for all required variables"
-  abort("Missing required configuration - see above")
-end
-
-# Configuration variables - PURE .env sourcing (no fallbacks)
+# Configuration variables - defaults may be overridden by env files
 NETWORK_SUBNET = env_vars['NETWORK_SUBNET']
 NGINX_IP = env_vars['LOAD_BALANCER_IP']
 TOMCAT_IP = env_vars['APPLICATION_SERVER_IP']
@@ -77,7 +66,7 @@ NGINX_CPUS = env_vars['NGINX_CPUS']
 TOMCAT_MEMORY = env_vars['TOMCAT_MEMORY']
 TOMCAT_CPUS = env_vars['TOMCAT_CPUS']
 
-# Boolean configuration - Also from .env
+# Boolean configuration - Also from env_vars / defaults
 ENABLE_PROVISIONING = env_vars['ENABLE_PROVISIONING'] != 'false'
 ENABLE_DEBUG = env_vars['ENABLE_DEBUG'] == 'true'
 
