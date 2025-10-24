@@ -82,22 +82,39 @@ def local_cache(box_name)
 end
 
 # Synced folders configuration
+PROJECT_ROOT = File.expand_path('..', __dir__)
+INFRASTRUCTURE_ROOT = __dir__
+
 def setup_synced_folders(config)
-  # Carpetas principales del proyecto
   folders_config = [
-    { path: "./api", fmode: "755" },
-    { path: "./ui", fmode: "755" },
-    { path: "./infrastructure", fmode: "755" }
+    {
+      host: File.join(PROJECT_ROOT, 'api'),
+      guest: '/vagrant/api',
+      fmode: '755'
+    },
+    {
+      host: File.join(PROJECT_ROOT, 'ui'),
+      guest: '/vagrant/ui',
+      fmode: '755'
+    },
+    {
+      host: INFRASTRUCTURE_ROOT,
+      guest: '/vagrant/infrastructure',
+      fmode: '755'
+    }
   ]
 
   folders_config.each do |folder|
-    folder_name = File.basename(folder[:path])
-    config.vm.synced_folder folder[:path], "/vagrant/#{folder_name}",
+    FileUtils.mkdir_p(folder[:host]) unless File.exist?(folder[:host])
+
+    config.vm.synced_folder folder[:host], folder[:guest],
       create: true, mount_options: ["dmode=755,fmode=#{folder[:fmode]}"]
   end
 
-  # Logs folder
-  config.vm.synced_folder "./logs", "/vagrant/logs",
+  logs_path = File.join(PROJECT_ROOT, 'logs')
+  FileUtils.mkdir_p(logs_path) unless File.exist?(logs_path)
+
+  config.vm.synced_folder logs_path, "/vagrant/logs",
     create: true, mount_options: ["dmode=755,fmode=644"]
 end
 
