@@ -23,9 +23,12 @@ pragmatism and clarity over dogmatism.
 
 ```
 /                    # Monorepo root
-├── bootstrap.sh     # Provisioning orchestrator (Bash)
-├── scripts/         # Installation, setup, test, and CI helpers (Bash)
 ├── infrastructure/  # Shared shell utilities, policy tooling, system assets
+│   ├── bootstrap.sh # Provisioning orchestrator (Bash)
+│   ├── bin/         # CLI wrappers for installers and generators
+│   ├── config/      # Environment defaults and template variables
+│   ├── scripts/     # Installation, setup, test, and CI helpers (Bash)
+│   └── utils/       # Shared shell helpers sourced by installers
 ├── config/          # Global variables, shell profiles, templates
 ├── dashboard/       # Python Flask + PyTM application (monolith core)
 │   ├── plantweb/    # PlantUML helpers and CLI
