@@ -1,5 +1,9 @@
 # UC-XXX: <TÍTULO DEL CASO DE USO>
 
+> ⚠️ Los casos de uso se documentan como narrativas textuales. Los diagramas UML
+> y otros artefactos visuales deben mantenerse aparte y referenciarse desde la
+> sección de trazabilidad.
+
 **Sistema:** <Nombre del sistema>
 **Caso de Uso:** UC-XXX
 **Versión:** <versión>
@@ -9,228 +13,92 @@
 
 ## 1. INFORMACIÓN GENERAL
 
-|Atributo|Descripción|
+|Campo|Detalle|
 |---|---|
 |**Código**|UC-XXX|
-|**Nombre**|<Nombre del caso de uso>|
-|**Prioridad**|<🟢/🟡/🔴 + descripción>|
-|**Actores**|<Lista con roles y códigos>|
-|**Tipo**|<Tipo de caso (ej. lectura, mantenimiento)>|
-|**Frecuencia de Uso**|<Alta/Media/Baja>|
-|**Complejidad**|<Baja/Media/Alta>|
+|**Nombre**|<Verbo + Objeto>|
+|**Actor primario**|<ACTOR PRINCIPAL EN MAYÚSCULAS>|
+|**Actores de soporte**|<ACTORES SECUNDARIOS EN MAYÚSCULAS (si aplican)>|
+|**Frecuencia estimada**|<Alta/Media/Baja>|
+|**Prioridad**|<Alta/Media/Baja + justificación breve>|
 
 ---
 
-## 2. DESCRIPCIÓN
+## 2. PROPÓSITO Y ALCANCE
 
-### 2.1 Propósito
-
-<Breve explicación del propósito del caso de uso.>
-
-### 2.2 Objetivo
-
-- <Objetivo 1>
-- <Objetivo 2>
-- <Objetivo n>
-
-### 2.3 Alcance
-
-**Incluye:**
-
-- ✅ <Actividad cubierta>
-
-**NO Incluye:**
-
-- ❌ <Actividad excluida>
-
-### 2.4 Restricciones Especiales
-
-1. <Restricción 1>
-2. <Restricción 2>
+- **Propósito:** <Explica el valor que obtiene el actor.>
+- **Resultado esperado:** <Describe el estado observable tras completar el caso de uso.>
+- **Alcance incluye:**
+  - ✅ <Actividad cubierta>
+- **Fuera de alcance:**
+  - ❌ <Actividad excluida>
 
 ---
 
 ## 3. PRECONDICIONES
 
-### 3.1 Precondiciones del Sistema
+- <Precondición 1>
+- <Precondición 2>
 
-```
-PRECOND-01: <Descripción>
-PRECOND-02: <Descripción>
-```
-
-### 3.2 Precondiciones del Usuario
-
-```
-PRECOND-XX: <Descripción>
-```
-
-### 3.3 Validación de Precondiciones
-
-**Pseudocódigo:**
-
-```
-FUNCION validar_precondiciones_ucxxx(usuario_id):
-    <Validaciones clave>
-FIN FUNCION
-```
+Si alguna precondición no aplica, indícalo explícitamente.
 
 ---
 
-## 4. FLUJO PRINCIPAL
+## 4. FLUJO PRINCIPAL (HAPPY PATH)
 
-### 4.1 Flujo Paso a Paso
+|Paso|Actor|Interacción|
+|---|---|---|
+|1|<ACTOR>|<Acción o intención del actor>|
+|2|<SISTEMA>|<Respuesta observable del sistema>|
+|...|...|...|
 
-```
-<Pasos narrados o diagramados>
-```
-
-### 4.2 Pseudocódigo del Flujo Principal
-
-```
-FUNCION ejecutar_caso_de_uso(usuario_id):
-    <Pasos principales>
-FIN FUNCION
-```
+Describe únicamente lo que se percibe externamente: mensajes, validaciones visibles,
+cambios de estado consultables, etc.
 
 ---
 
-## 5. FLUJOS ALTERNATIVOS
+## 5. FLUJOS ALTERNOS
 
-### FA-01: <Nombre del flujo>
+|ID|Condición|Curso de acción|
+|---|---|---|
+|FA-01|<Condición detectable>|<Secuencia resumida desde la perspectiva del actor>|
 
-**Descripción:** <Contexto>
-
-**Trigger:** <Evento>
-
-**Flujo:**
-
-```
-<Pasos del flujo alternativo>
-```
-
-**Pseudocódigo:**
-
-```
-FUNCION flujo_alternativo(parametros):
-    <Pasos>
-FIN FUNCION
-```
-
-<!-- Repetir secciones FA-0X según sea necesario -->
+Agrega filas adicionales para cada variación relevante. Si no existen, consigna "No
+se identifican flujos alternos".
 
 ---
 
-## 6. FLUJOS DE EXCEPCIÓN
+## 6. EXCEPCIONES
 
-### FE-01: <Nombre del flujo>
-
-```
-<Pasos del flujo de excepción>
-```
-
-<!-- Repetir secciones FE-0X según sea necesario -->
+|ID|Evento|Respuesta observable|
+|---|---|---|
+|FE-01|<Evento>|<Cómo se notifica al actor y qué ocurre con el caso de uso>|
 
 ---
 
 ## 7. POSTCONDICIONES
 
-### 7.1 Postcondiciones de Éxito
-
-```
-POST-01: <Descripción>
-```
-
-### 7.2 Postcondiciones de Fallo
-
-```
-POST-FAIL-01: <Descripción>
-```
+- **Éxito:** <Estado del sistema y del actor tras completar el flujo principal.>
+- **Fallo:** <Estado cuando el caso de uso termina sin éxito.>
 
 ---
 
-## 8. REGLAS DE NEGOCIO
+## 8. REQUISITOS ESPECIALES
 
-### 8.1 Reglas Generales
+Registra atributos de calidad, reglas de negocio o restricciones que afectan la
+interacción desde la perspectiva del actor.
 
-```
-RN-001: <Descripción>
-```
+- <Requisito especial 1>
+- <Regla de negocio relevante>
 
-<!-- Añadir subsecciones adicionales (permisos, edición, etc.) según corresponda -->
-
----
-
-## 9. TABLA DE BASE DE DATOS
-
-### 9.1 Tabla: <nombre>
-
-```sql
-CREATE TABLE <tabla> (
-    <columnas>
-);
-```
+Si no existen, indicar "No aplica".
 
 ---
 
-## 10. VALIDACIONES
+## 9. REFERENCIAS Y TRAZABILIDAD
 
-### 10.1 Validaciones de Entrada
+Añade la información que vincula este caso de uso con otros artefactos.
 
-```
-VAL-01: <Descripción>
-```
-
-### 10.2 Validaciones de Negocio
-
-```
-VAL-XX: <Descripción>
-```
-
-### 10.3 Validaciones de Seguridad
-
-```
-VAL-YY: <Descripción>
-```
-
----
-
-## 11. EJEMPLOS DE USO
-
-### 11.1 Ejemplo: <Nombre>
-
-1. <Paso 1>
-
----
-
-## 12. REQUISITOS NO FUNCIONALES
-
-### 12.1 Rendimiento
-
-```
-RNF-01: <Descripción>
-```
-
-<!-- Añadir subsecciones adicionales (usabilidad, seguridad, etc.) -->
-
----
-
-## 13. NOTAS ADICIONALES
-
-### 13.1 <Título>
-
-<Contenido>
-
----
-
-## 14. MATRIZ DE TRAZABILIDAD
-
-|Requisito|Documento Origen|Sección|
-|---|---|---|
-|<ID>|<Documento>|<Referencia>|
-
----
-
-**FIN DEL CASO DE USO UC-XXX**
-
-**Próximo:** <Referencia opcional>
+- **Casos de uso relacionados:** <UC-XXX-... o "No aplica">.
+- **Artefactos complementarios:** <Diagramas, mockups, etc., con enlace relativo o "No aplica">.
+- **Notas adicionales:** <Observaciones de trazabilidad o estado>.
