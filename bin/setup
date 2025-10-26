@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Wrapper preserved for backward compatibility; delegates to top-level bin/generate
+# Project-level wrapper for infrastructure/bin/setup
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
-exec "${PROJECT_ROOT}/bin/generate" "$@"
+exec "${PROJECT_ROOT}/infrastructure/bin/setup" "$@"

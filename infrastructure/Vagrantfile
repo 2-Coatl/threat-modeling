@@ -84,39 +84,18 @@ end
 # Synced folders configuration
 PROJECT_ROOT = File.expand_path('..', __dir__)
 INFRASTRUCTURE_ROOT = __dir__
-
-def setup_synced_folders(config)
-  folders_config = [
-    {
-      host: File.join(PROJECT_ROOT, 'api'),
-      guest: '/vagrant/api',
-      fmode: '755'
-    },
-    {
-      host: File.join(PROJECT_ROOT, 'ui'),
-      guest: '/vagrant/ui',
-      fmode: '755'
-    },
-    {
-      host: INFRASTRUCTURE_ROOT,
-      guest: '/vagrant/infrastructure',
-      fmode: '755'
-    }
-  ]
-
-  folders_config.each do |folder|
-    FileUtils.mkdir_p(folder[:host]) unless File.exist?(folder[:host])
-
-    config.vm.synced_folder folder[:host], folder[:guest],
-      create: true, mount_options: ["dmode=755,fmode=#{folder[:fmode]}"]
-  end
-
-  logs_path = File.join(PROJECT_ROOT, 'logs')
-  FileUtils.mkdir_p(logs_path) unless File.exist?(logs_path)
-
-  config.vm.synced_folder logs_path, "/vagrant/logs",
-    create: true, mount_options: ["dmode=755,fmode=644"]
-end
+SYNCED_FOLDERS = [
+  {
+    host: File.join(PROJECT_ROOT, 'api'),
+    guest: '/vagrant/api',
+    fmode: '755'
+  },
+  {
+    host: INFRASTRUCTURE_ROOT,
+    guest: '/vagrant/infrastructure',
+    fmode: '755'
+  }
+].freeze
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # Base box configuration - Ubuntu 20.04 LTS
@@ -143,8 +122,23 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # Disable default /vagrant sync to improve performance
   config.vm.synced_folder ".", "/vagrant", disabled: true
 
-  # Setup all synced folders
-  setup_synced_folders(config)
+  # Explicitly disable the legacy UI share so Vagrant doesn't recreate it
+  config.vm.synced_folder File.join(PROJECT_ROOT, 'ui'), "/vagrant/ui", disabled: true
+
+  # Setup synced folders without helper indirection so the configuration is
+  # immediately visible alongside the rest of the VM definition.
+  SYNCED_FOLDERS.each do |folder|
+    FileUtils.mkdir_p(folder[:host]) unless File.exist?(folder[:host])
+
+    config.vm.synced_folder folder[:host], folder[:guest],
+      create: true, mount_options: ["dmode=755,fmode=#{folder[:fmode]}"]
+  end
+
+  logs_path = File.join(PROJECT_ROOT, 'logs')
+  FileUtils.mkdir_p(logs_path) unless File.exist?(logs_path)
+
+  config.vm.synced_folder logs_path, "/vagrant/logs",
+    create: true, mount_options: ["dmode=755,fmode=644"]
 
   # Global VirtualBox provider configuration
   config.vm.provider "virtualbox" do |vb|
@@ -197,7 +191,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     SSH:        vagrant ssh nginx01
     Resources:  #{NGINX_MEMORY}MB RAM, #{NGINX_CPUS} CPU(s)
 
-    NEXT STEPS: Implement T007-T015B methodology
+    Reverse proxy will forward requests to tomcat01 at http://#{TOMCAT_IP}:8080/
     ========================================
     MESSAGE
   end
@@ -234,13 +228,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     SSH:        vagrant ssh tomcat01
     Resources:  #{TOMCAT_MEMORY}MB RAM, #{TOMCAT_CPUS} CPU(s)
 
-    NEXT STEPS: Implement T007-T015B methodology
+    Access Tomcat + PlantUML: http://#{TOMCAT_IP}:8080/
+    (Use host-only network from the host system)
     ========================================
     MESSAGE
   end
 
   if ENABLE_PROVISIONING
-    config.vm.provision "shell", privileged: false, inline: <<-SHELL
+    config.vm.provision "shell", privileged: true, inline: <<-SHELL
       set -euo pipefail
 
       export DEBIAN_FRONTEND=noninteractive

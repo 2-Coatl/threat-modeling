@@ -1,0 +1,701 @@
+#!/usr/bin/env bash
+# bin/generate - Auto-discover and generate threat models
+# Runs as threatmodel user via sudo
+
+set -euo pipefail
+
+# =============================================================================
+# INITIALIZATION
+# =============================================================================
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+if [[ -z "${PROJECT_ROOT:-}" ]]; then
+    PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+fi
+
+# =============================================================================
+# CHECK EXECUTION CONTEXT
+# =============================================================================
+
+check_execution_context() {
+    # Load variables to get THREAT_MODEL_USER
+    if [[ -f "$PROJECT_ROOT/infrastructure/config/variables.sh" ]]; then
+        source "$PROJECT_ROOT/infrastructure/config/variables.sh"
+    else
+        echo "ERROR: infrastructure/config/variables.sh not found" >&2
+        return 1
+    fi
+
+    local current_user
+    current_user=$(whoami)
+
+    # If already running as threatmodel user, continue
+    if [[ "$current_user" == "$THREAT_MODEL_USER" ]]; then
+        return 0
+    fi
+
+    # If running as vagrant, re-execute with sudo
+    if [[ "$current_user" == "vagrant" ]]; then
+        echo "INFO: Re-executing as $THREAT_MODEL_USER user..." >&2
+        exec sudo -u "$THREAT_MODEL_USER" "$0" "$@"
+    fi
+
+    # If running as root, switch to threatmodel user
+    if [[ "$current_user" == "root" ]]; then
+        echo "INFO: Switching to $THREAT_MODEL_USER user..." >&2
+        exec su - "$THREAT_MODEL_USER" -c "$0 $*"
+    fi
+
+    # Unknown user - error
+    echo "ERROR: This script must be run as vagrant, root, or $THREAT_MODEL_USER" >&2
+    echo "Current user: $current_user" >&2
+    return 1
+}
+
+# Check execution context first
+if ! check_execution_context "$@"; then
+    exit 1
+fi
+
+# =============================================================================
+# LOAD ENVIRONMENT
+# =============================================================================
+
+load_environment() {
+    if [[ -f "$PROJECT_ROOT/infrastructure/utils/core.sh" ]]; then
+        source "$PROJECT_ROOT/infrastructure/utils/core.sh"
+
+        if ! load_project_environment; then
+            echo "ERROR: Failed to load project environment" >&2
+            return 1
+        fi
+    else
+        echo "ERROR: Core system not found at: $PROJECT_ROOT/infrastructure/utils/core.sh" >&2
+        return 1
+    fi
+
+    return 0
+}
+
+# =============================================================================
+# LOAD ENVIRONMENT
+# =============================================================================
+
+if ! load_environment; then
+    echo "CRITICAL: Environment loading failed" >&2
+    exit 1
+fi
+
+log_header "Threat Model Generation"
+log_info "Running as user: $(whoami)"
+
+# =============================================================================
+# PLANTUML WEB CONFIGURATION
+# =============================================================================
+
+# PlantUML server URL (can be overridden via environment variable)
+PLANTUML_SERVER="${PLANTUML_SERVER:-http://localhost:8080/plantuml}"
+
+# =============================================================================
+# PLANTUML ENCODING FUNCTION
+# =============================================================================
+
+# Encode PlantUML text to URL-safe format
+# Based on: https://plantuml.com/text-encoding
+encode_plantuml() {
+    local input="$1"
+
+    # Compress with deflate and encode to base64
+    # Then convert to PlantUML's custom base64 variant
+    python3 -c "
+import zlib
+import base64
+import sys
+
+def encode_plantuml(text):
+    # Compress
+    compressed = zlib.compress(text.encode('utf-8'), 9)[2:-4]
+
+    # Custom base64 alphabet for PlantUML
+    alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_'
+
+    # Convert to custom base64
+    result = []
+    for i in range(0, len(compressed), 3):
+        if i + 2 < len(compressed):
+            b1, b2, b3 = compressed[i], compressed[i+1], compressed[i+2]
+            result.append(alphabet[(b1 >> 2) & 0x3F])
+            result.append(alphabet[((b1 & 0x3) << 4) | ((b2 >> 4) & 0xF)])
+            result.append(alphabet[((b2 & 0xF) << 2) | ((b3 >> 6) & 0x3)])
+            result.append(alphabet[b3 & 0x3F])
+        elif i + 1 < len(compressed):
+            b1, b2 = compressed[i], compressed[i+1]
+            result.append(alphabet[(b1 >> 2) & 0x3F])
+            result.append(alphabet[((b1 & 0x3) << 4) | ((b2 >> 4) & 0xF)])
+            result.append(alphabet[((b2 & 0xF) << 2)])
+        else:
+            b1 = compressed[i]
+            result.append(alphabet[(b1 >> 2) & 0x3F])
+            result.append(alphabet[((b1 & 0x3) << 4)])
+
+    return ''.join(result)
+
+text = sys.stdin.read()
+print(encode_plantuml(text))
+" <<< "$input"
+}
+
+# =============================================================================
+# CHECK DEPENDENCIES
+# =============================================================================
+
+check_dependencies() {
+    log_info "Checking dependencies..."
+
+    local required_commands=(
+        "python3"
+        "dot"
+        "curl"
+        "pandoc"
+    )
+
+    local missing=()
+
+    for cmd in "${required_commands[@]}"; do
+        if ! command -v "$cmd" >/dev/null 2>&1; then
+            missing+=("$cmd")
+        fi
+    done
+
+    if [[ ${#missing[@]} -gt 0 ]]; then
+        log_error "Missing required commands:"
+        printf '  - %s\n' "${missing[@]}" >&2
+        log_error "Run: sudo /vagrant/bin/setup"
+        return 1
+    fi
+
+    if ! python3 -c "import pytm" 2>/dev/null; then
+        log_error "pytm not available"
+        log_error "Run: sudo /vagrant/bin/setup"
+        return 1
+    fi
+
+    # Check if PlantUML server is reachable
+    log_info "Checking PlantUML server: $PLANTUML_SERVER"
+    if ! curl -s --max-time 5 "$PLANTUML_SERVER" >/dev/null 2>&1; then
+        log_warning "PlantUML server not reachable, diagrams may fail"
+    fi
+
+    log_success "All dependencies available"
+    return 0
+}
+
+# =============================================================================
+# DISCOVER MODELS
+# =============================================================================
+
+discover_models() {
+    find "$MODELS_DIR" -maxdepth 1 -type f -name "*_model.py" 2>/dev/null | sort
+}
+
+# =============================================================================
+# LIST MODELS
+# =============================================================================
+
+list_models() {
+    log_info "Discovering models in: $MODELS_DIR"
+
+    local models
+    models=$(discover_models)
+
+    if [[ -z "$models" ]]; then
+        log_warning "No models found"
+        log_info "Models must:"
+        log_info "  - Be in: $MODELS_DIR"
+        log_info "  - End with: _model.py"
+        log_info "  - Example: auth_model.py"
+        return 0
+    fi
+
+    local count
+    count=$(echo "$models" | wc -l)
+
+    log_info "Found $count model(s):"
+
+    echo "$models" | while read -r model; do
+        local basename
+        basename=$(basename "$model")
+        echo "  - $basename"
+    done
+
+    return 0
+}
+
+# =============================================================================
+# ENSURE OUTPUT DIRECTORIES
+# =============================================================================
+
+ensure_output_directories() {
+    local dirs=(
+        "$DIAGRAMS_DIR"
+        "$REPORTS_DIR"
+    )
+
+    for dir in "${dirs[@]}"; do
+        if [[ ! -d "$dir" ]]; then
+            if ! mkdir -p "$dir" 2>/dev/null; then
+                log_error "Failed to create: $dir"
+                return 1
+            fi
+            log_debug "Created: $dir"
+        fi
+    done
+
+    return 0
+}
+
+# =============================================================================
+# GENERATE DFD
+# =============================================================================
+
+generate_dfd() {
+    local model_file="$1"
+    local model_name="$2"
+
+    log_info "Generating Data Flow Diagram..."
+
+    local output_file="$DIAGRAMS_DIR/${model_name}_dfd.png"
+
+    local python_output
+    local dot_output
+    local exit_code
+
+    # Execute python3 and capture output and exit code
+    set +e
+    python_output=$(python3 "$model_file" --dfd 2>&1)
+    exit_code=$?
+    set -e
+
+    if [[ $exit_code -ne 0 ]]; then
+        log_error "Python execution failed for DFD"
+        echo "$python_output" >&2
+        return 1
+    fi
+
+    # Pipe to dot and capture output
+    set +e
+    dot_output=$(echo "$python_output" | dot -Tpng -o "$output_file" 2>&1)
+    exit_code=$?
+    set -e
+
+    if [[ $exit_code -ne 0 ]]; then
+        log_error "Graphviz dot failed"
+        echo "$dot_output" >&2
+        return 1
+    fi
+
+    if [[ ! -f "$output_file" ]]; then
+        log_error "DFD file not created: $output_file"
+        return 1
+    fi
+
+    local file_size
+    file_size=$(stat -c%s "$output_file" 2>/dev/null || echo "0")
+
+    if [[ $file_size -lt 1000 ]]; then
+        log_warning "DFD file suspiciously small: $file_size bytes"
+    fi
+
+    log_success "DFD created: $output_file"
+
+    return 0
+}
+
+# =============================================================================
+# GENERATE SEQUENCE DIAGRAM (WEB VERSION)
+# =============================================================================
+
+generate_sequence() {
+    local model_file="$1"
+    local model_name="$2"
+
+    log_info "Generating Sequence Diagram..."
+
+    local output_file="$DIAGRAMS_DIR/${model_name}_seq.png"
+
+    local python_output
+    local exit_code
+
+    # Execute python3 and capture output
+    set +e
+    python_output=$(python3 "$model_file" --seq 2>&1)
+    exit_code=$?
+    set -e
+
+    if [[ $exit_code -ne 0 ]]; then
+        log_error "Python execution failed for sequence diagram"
+        echo "$python_output" >&2
+        return 1
+    fi
+
+    # Encode PlantUML content
+    log_debug "Encoding PlantUML diagram..."
+    local encoded
+    if ! encoded=$(encode_plantuml "$python_output"); then
+        log_error "Failed to encode PlantUML content"
+        return 1
+    fi
+
+    # Build URL
+    local url="${PLANTUML_SERVER}/png/${encoded}"
+
+    log_debug "Downloading from PlantUML server..."
+
+    # Download PNG from PlantUML server
+    local curl_output
+    set +e
+    curl_output=$(curl -s -f -o "$output_file" "$url" 2>&1)
+    exit_code=$?
+    set -e
+
+    if [[ $exit_code -ne 0 ]]; then
+        log_error "Failed to download from PlantUML server"
+        echo "$curl_output" >&2
+        log_error "URL: $url"
+        return 1
+    fi
+
+    if [[ ! -f "$output_file" ]]; then
+        log_error "Sequence diagram not created: $output_file"
+        return 1
+    fi
+
+    local file_size
+    file_size=$(stat -c%s "$output_file" 2>/dev/null || echo "0")
+
+    if [[ $file_size -lt 100 ]]; then
+        log_error "Downloaded file too small ($file_size bytes), likely an error"
+        return 1
+    fi
+
+    log_success "Sequence diagram created: $output_file"
+
+    return 0
+}
+
+# =============================================================================
+# GENERATE REPORT
+# =============================================================================
+
+generate_report() {
+    local model_file="$1"
+    local model_name="$2"
+
+    log_info "Generating HTML report..."
+
+    local template_file="$TEMPLATES_DIR/report_template.md"
+    local output_file="$REPORTS_DIR/${model_name}_report.html"
+
+    local python_output
+    local pandoc_output
+    local exit_code
+
+    # Check if template exists
+    local template_arg=""
+    if [[ -f "$template_file" ]]; then
+        template_arg="$template_file"
+        log_debug "Using template: $template_file"
+    else
+        log_debug "No template found, using default"
+    fi
+
+    # Execute python3
+    set +e
+    if [[ -n "$template_arg" ]]; then
+        python_output=$(python3 "$model_file" --report "$template_arg" 2>&1)
+    else
+        python_output=$(python3 "$model_file" --report 2>&1)
+    fi
+    exit_code=$?
+    set -e
+
+    if [[ $exit_code -ne 0 ]]; then
+        log_error "Python execution failed for report"
+        echo "$python_output" >&2
+        return 1
+    fi
+
+    # Pipe to pandoc
+    set +e
+    pandoc_output=$(echo "$python_output" | pandoc -f markdown -t html -o "$output_file" 2>&1)
+    exit_code=$?
+    set -e
+
+    if [[ $exit_code -ne 0 ]]; then
+        log_error "Pandoc execution failed"
+        echo "$pandoc_output" >&2
+        return 1
+    fi
+
+    if [[ ! -f "$output_file" ]]; then
+        log_error "Report not created: $output_file"
+        return 1
+    fi
+
+    log_success "Report created: $output_file"
+
+    return 0
+}
+
+# =============================================================================
+# GENERATE MODEL
+# =============================================================================
+
+generate_model() {
+    local model_file="$1"
+
+    local model_name
+    model_name=$(basename "$model_file" .py)
+
+    log_header "Processing: $model_name"
+
+    if [[ ! -f "$model_file" ]]; then
+        log_error "Model file not found: $model_file"
+        return 1
+    fi
+
+    if [[ ! -r "$model_file" ]]; then
+        log_error "Model file not readable: $model_file"
+        return 1
+    fi
+
+    if ! ensure_output_directories; then
+        log_error "Failed to create output directories"
+        return 1
+    fi
+
+    local success_count=0
+    local total_count=3
+
+    if generate_dfd "$model_file" "$model_name"; then
+        success_count=$((success_count + 1))
+    fi
+
+    if generate_sequence "$model_file" "$model_name"; then
+        success_count=$((success_count + 1))
+    fi
+
+    if generate_report "$model_file" "$model_name"; then
+        success_count=$((success_count + 1))
+    fi
+
+    log_info "Outputs generated: $success_count/$total_count"
+
+    if [[ $success_count -eq $total_count ]]; then
+        log_success "Model processed successfully: $model_name"
+        return 0
+    elif [[ $success_count -gt 0 ]]; then
+        log_warning "Model partially processed: $model_name"
+        return 2
+    else
+        log_error "Model processing completely failed: $model_name"
+        return 1
+    fi
+}
+
+# =============================================================================
+# PROCESS ALL MODELS
+# =============================================================================
+
+process_all_models() {
+    log_info "Discovering models..."
+
+    local models
+    models=$(discover_models)
+
+    if [[ -z "$models" ]]; then
+        log_warning "No models found in: $MODELS_DIR"
+        log_info "Create a file ending with '_model.py' to get started"
+        return 0
+    fi
+
+    local total_models
+    total_models=$(echo "$models" | wc -l)
+
+    log_info "Found $total_models model(s)"
+
+    local successful=0
+    local failed=0
+    local partial=0
+    local index=0
+
+    # Process each model using a while loop with proper IFS handling
+    echo "$models" | while IFS= read -r model; do
+        # Skip empty lines
+        [[ -z "$model" ]] && continue
+
+        index=$((index + 1))
+
+        local basename
+        basename=$(basename "$model")
+
+        log_info "[$index/$total_models] Processing $basename"
+
+        local result
+        set +e
+        generate_model "$model"
+        result=$?
+        set -e
+
+        if [[ $result -eq 0 ]]; then
+            successful=$((successful + 1))
+        elif [[ $result -eq 2 ]]; then
+            partial=$((partial + 1))
+        else
+            failed=$((failed + 1))
+        fi
+
+        if [[ $index -lt $total_models ]]; then
+            echo ""
+        fi
+    done
+
+    # Note: Variables inside while loop are in subshell, so we recalculate
+    log_header "Generation Summary"
+
+    # Count actual output files to determine success
+    local dfd_count=$(find "$DIAGRAMS_DIR" -name "*_dfd.png" 2>/dev/null | wc -l)
+    local seq_count=$(find "$DIAGRAMS_DIR" -name "*_seq.png" 2>/dev/null | wc -l)
+    local report_count=$(find "$REPORTS_DIR" -name "*_report.html" 2>/dev/null | wc -l)
+
+    log_info "Total models: $total_models"
+    log_info "Generated outputs:"
+    log_info "  DFDs: $dfd_count"
+    log_info "  Sequence diagrams: $seq_count"
+    log_info "  Reports: $report_count"
+
+    local expected_total=$((total_models * 3))
+    local actual_total=$((dfd_count + seq_count + report_count))
+
+    if [[ $actual_total -eq $expected_total ]]; then
+        log_success "All models processed successfully"
+
+        log_info ""
+        log_info "View outputs via web:"
+        log_info "  http://localhost:${TOMCAT_PORT}/outputs/diagrams/"
+        log_info "  http://localhost:${TOMCAT_PORT}/outputs/reports/"
+        log_info ""
+        log_info "Or view locally:"
+        log_info "  $DIAGRAMS_DIR"
+        log_info "  $REPORTS_DIR"
+
+        return 0
+    elif [[ $actual_total -gt 0 ]]; then
+        log_warning "Some outputs failed ($actual_total/$expected_total)"
+        return 2
+    else
+        log_error "All models failed"
+        return 1
+    fi
+}
+
+# =============================================================================
+# SHOW USAGE
+# =============================================================================
+
+show_usage() {
+    cat << 'EOF'
+Usage: tm-generate [OPTIONS] [MODEL_FILE]
+   or: sudo -u threatmodel /vagrant/bin/generate [OPTIONS] [MODEL_FILE]
+
+Generate threat model diagrams and reports.
+
+EXECUTION:
+    This script automatically runs as 'threatmodel' user via sudo.
+    If executed by vagrant user, it will re-execute with sudo.
+
+OPTIONS:
+    --list, -l          List available models
+    --help, -h          Show this help message
+
+ARGUMENTS:
+    MODEL_FILE          Path to specific model to generate
+                        If omitted, generates all models
+
+CONFIGURATION:
+    PLANTUML_SERVER     PlantUML server URL (default: http://localhost:8080/plantuml)
+                        Can be set to self-hosted instance
+
+EXAMPLES:
+    # Generate all models (using alias)
+    tm-generate
+
+    # Generate specific model
+    tm-generate api/models/auth_model.py
+
+    # Use custom PlantUML server
+    PLANTUML_SERVER=http://localhost:8080/plantuml tm-generate
+
+    # List available models
+    tm-list
+
+OUTPUT:
+    Diagrams: api/output/diagrams/ (owner: threatmodel)
+    Reports:  api/output/reports/  (owner: threatmodel)
+    Logs:     /var/log/api/threatmodel.log   (owner: threatmodel)
+
+    Web Access:
+    http://localhost:8080/outputs/diagrams/
+    http://localhost:8080/outputs/reports/
+
+NOTE:
+    Sequence diagrams are generated using PlantUML web service.
+    Requires internet connection unless using self-hosted server.
+
+EOF
+}
+
+# =============================================================================
+# MAIN FUNCTION
+# =============================================================================
+
+main() {
+    if ! check_dependencies; then
+        return 1
+    fi
+
+    if [[ $# -eq 0 ]]; then
+        process_all_models
+        return $?
+    fi
+
+    case "${1}" in
+        --list|-l)
+            list_models
+            return 0
+            ;;
+        --help|-h)
+            show_usage
+            return 0
+            ;;
+        *)
+            local model_file="$1"
+
+            if [[ ! "$model_file" = /* ]]; then
+                model_file="$PROJECT_ROOT/$model_file"
+            fi
+
+            generate_model "$model_file"
+            return $?
+            ;;
+    esac
+}
+
+# =============================================================================
+# EXECUTION
+# =============================================================================
+
+
+main "$@"
+exit $?
