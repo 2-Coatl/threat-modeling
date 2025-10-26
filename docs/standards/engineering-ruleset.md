@@ -141,9 +141,12 @@ Additional rules:
 
 ## 10. Git Hygiene
 
-- Conventional Commits enforced by `.githooks/commit-msg`.
-- Hooks live in `.githooks/`; run `infrastructure/bin/setup` once to configure
-  `core.hooksPath`.
+- Conventional Commits are enforced by `.githooks/commit-msg`; keep messages in
+  the `<type>(<scope>): <description>` format and never bypass the hook with
+  `--no-verify`.
+- Hooks live in `.githooks/`; run `infrastructure/bin/setup` once (or execute
+  `git config core.hooksPath .githooks`) to configure the hook path after
+  cloning.
 - Run `infrastructure/scripts/ci/run-policy-checks.sh` locally before opening
   PRs.
 - Binary artifacts, generated diagrams, build outputs, and environment-specific
