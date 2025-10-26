@@ -32,4 +32,5 @@ prerequisites, expected flows, and auditing requirements.
 | UC-API-003 | Analizar amenazas con pytm y generar reporte      | 1.0     | 2025-10-26           |
 | UC-API-004 | Gestionar correcciones con historial y rollback   | 1.0     | 2025-10-26           |
 | UC-API-005 | Presentar hallazgos y artefactos del análisis     | 1.0     | 2025-10-26           |
+| UC-API-006 | Generar artefactos con PlantUML                   | 1.0     | 2025-10-26           |
 

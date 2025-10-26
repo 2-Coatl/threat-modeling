@@ -103,7 +103,7 @@ FIN FUNCION
 PASO 1: Diseñar o ajustar el código PlantUML en la UI y solicitar previsualización (UC-API-002).
 PASO 2: Si la previsualización es correcta, guardar versión mediante `/api/diagram/generate` con metadatos (UC-API-001).
 PASO 3: Asociar la versión guardada a un modelo pytm y lanzar análisis desde la UI (UC-API-003).
-PASO 4: Ejecutar pytm, renderizar diagramas auxiliares y generar reporte en `api/output` (UC-API-005).
+PASO 4: Ejecutar `tm-generate` para producir DFD, secuencia y reporte HTML del modelo seleccionado (UC-API-006).
 PASO 5: Notificar resultados al usuario, incluyendo resumen de hallazgos críticos y enlaces a Tomcat (UC-API-005).
 PASO 6: Revisar historial/diff y, de ser necesario, aplicar correcciones o rollback (UC-API-004) y repetir ciclo.
 ```
@@ -131,8 +131,8 @@ FUNCION operar_flujo_modelado(diagrama, usuario):
             save_history=True,
             metadata={"author": usuario.email, "description": diagrama.descripcion}
         )
-        reporte = ejecutar_analisis_pytm(commit, diagrama.modelo_pytm)
-        publicar_en_tomcat(reporte, commit)
+        artefactos = tm_generate(diagrama.modelo_pytm)
+        publicar_en_tomcat(artefactos, commit)
     MOSTRAR historial(diagrama.nombre)
 FIN FUNCION
 ```
