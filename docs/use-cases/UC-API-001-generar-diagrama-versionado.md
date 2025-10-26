@@ -1,8 +1,8 @@
-# UC-API-001: GENERAR DIAGRAMAS VERSIONADOS
+# UC-API-001: DISEÑAR Y VERSIONAR DIAGRAMAS PLANTUML
 
 **Sistema:** Threat Modeling Platform API  
 **Caso de Uso:** UC-API-001  
-**Versión:** 1.0  
+**Versión:** 2.0  
 **Fecha:** 2025-10-26
 
 ---
@@ -12,12 +12,12 @@
 |Atributo|Descripción|
 |---|---|
 |**Código**|UC-API-001|
-|**Nombre**|Generar diagramas versionados|
+|**Nombre**|Diseñar y versionar diagramas PlantUML|
 |**Prioridad**|🟡 Alta|
-|**Actores**|• Servicio de UI (`ui`)
-• Clientes externos autorizados|
-|**Tipo**|Gestión (creación + persistencia)|
-|**Frecuencia de Uso**|Alta|
+|**Actores**|• Autor del modelo desde la UI (`api/templates/index.html`)  
+• Servicio Flask `/api/diagram/generate`|
+|**Tipo**|Gestión de artefactos (creación + auditoría)|
+|**Frecuencia de Uso**|Alta (en cada iteración del modelo)|
 |**Complejidad**|Media|
 
 ---
@@ -26,35 +26,35 @@
 
 ### 2.1 Propósito
 
-Permitir que la API genere diagramas a partir de código PlantUML, renderice una imagen en el formato solicitado y persista el historial del diagrama con metadatos de auditoría.
+Permitir que un analista de amenazas capture código PlantUML en el editor visual, envíe el contenido al endpoint `/api/diagram/generate` y reciba una versión persistida con metadatos de auditoría. El flujo alimenta el ciclo "diseñar → analizar → corregir" descrito en los casos posteriores.【F:api/app.py†L49-L93】【F:api/diagram_service.py†L43-L117】
 
 ### 2.2 Objetivo
 
-- Recibir código PlantUML y nombre lógico del diagrama.
-- Renderizar la imagen solicitada en el backend Python.
-- Registrar el commit y metadatos en la carpeta de historial.
-- Responder al cliente con hashes y confirmación de persistencia.
+- Recibir nombre lógico, código PlantUML y metadatos opcionales desde la UI.
+- Calcular hashes determinísticos para identificar el contenido generado.
+- Guardar el código como versión inmutable y exponer `commit_hash` para rastreo.
+- Preparar la base para ejecutar validaciones con pytm y mostrar hallazgos.
 
 ### 2.3 Alcance
 
 **Incluye:**
 
-- ✅ Validar campos obligatorios `name` y `code` en la solicitud.
-- ✅ Generar bytes determinísticos del diagrama según el formato.
-- ✅ Guardar versión y metadatos en disco si `save_history=True`.
-- ✅ Devolver identificadores (`commit_hash`, `diagram_hash`) al consumidor.
+- ✅ Validación mínima de payload (`name`, `code`) antes de procesar la solicitud.【F:api/app.py†L55-L75】
+- ✅ Generación de bytes del diagrama y hash SHA-1 del código para detectar cambios.【F:api/diagram_service.py†L57-L79】
+- ✅ Persistencia del código en `/vagrant/api/history/<diagram>/versions/` con metadata JSON accesible desde la UI.【F:api/diagram_service.py†L118-L162】
+- ✅ Registro de autor y descripción para anotar qué modelo pytm originó el código enviado.
 
 **NO Incluye:**
 
-- ❌ Renderizado con PlantUML remoto (se usa motor placeholder).
-- ❌ Gestión de permisos de carpetas (delegado a infraestructura).
-- ❌ Validación semántica avanzada del código PlantUML.
+- ❌ Validaciones semánticas del PlantUML (se delega a la vista previa y a pytm).
+- ❌ Generación de reportes de hallazgos (cubierto por UC-API-003).
+- ❌ Gestión de permisos de archivos a nivel sistema (protegido por bootstrap).
 
 ### 2.4 Restricciones Especiales
 
-1. El historial se almacena bajo `DIAGRAM_SERVICE_HISTORY_DIR` (`/vagrant/api/history` por defecto).
-2. El formato soportado por defecto es `svg`, pero se acepta cualquier valor que la UI soporte.
-3. La operación debe ejecutarse de manera thread-safe para evitar corrupción del historial.
+1. El historial usa `DIAGRAM_SERVICE_HISTORY_DIR` (por defecto `/vagrant/api/history`) y debe existir antes de la operación.【F:api/diagram_service.py†L46-L55】
+2. La operación se ejecuta bajo un `threading.Lock` para evitar condiciones de carrera entre autores concurrentes.【F:api/diagram_service.py†L50-L55】
+3. El servicio retorna bytes placeholder; la representación final se consume desde la carpeta de salida o se re-renderiza al mostrar la vista previa.
 
 ---
 
@@ -63,17 +63,18 @@ Permitir que la API genere diagramas a partir de código PlantUML, renderice una
 ### 3.1 Precondiciones del Sistema
 
 ```
-PRECOND-01: Directorio de historial existente y con permisos de escritura.
-PRECOND-02: Variables de entorno de PlantUML opcionales configuradas si aplica.
-PRECOND-03: Servicio Flask activo y escuchando el endpoint `/api/diagram/generate`.
+PRECOND-01: Aplicación Flask en ejecución con acceso al endpoint `/api/diagram/generate`.
+PRECOND-02: Directorio de historial accesible y con permisos de escritura.
+PRECOND-03: Dependencias Python cargadas (`Flask`, `diagram_service`).
+PRECOND-04: (Opcional) Plantweb y pytm instalados si el código proviene de modelos programáticos.
 ```
 
 ### 3.2 Precondiciones del Usuario
 
 ```
-PRECOND-04: Cliente autenticado o confiable según políticas del despliegue.
-PRECOND-05: Solicitud HTTP con `Content-Type: application/json`.
-PRECOND-06: Payload con campos mínimos `name` y `code`.
+PRECOND-05: Analista autenticado en la UI del editor.
+PRECOND-06: Formulario con nombre del diagrama único y código PlantUML válido.
+PRECOND-07: Elección de formato (`svg` por defecto) y descripción opcional para trazabilidad.
 ```
 
 ### 3.3 Validación de Precondiciones
@@ -83,12 +84,12 @@ PRECOND-06: Payload con campos mínimos `name` y `code`.
 ```
 FUNCION validar_precondiciones_uc_api_001(request):
     SI request.content_type != 'application/json':
-        RETORNAR error('Solicitud inválida')
-    datos = request.json
+        RETORNAR error('Formato inválido')
+    datos = request.get_json()
     SI 'name' NO EN datos O 'code' NO EN datos:
-        RETORNAR error('name y code son obligatorios')
-    SI directorio_historial NO accesible:
-        RETORNAR error('Historial no disponible')
+        RETORNAR error('Faltan campos requeridos')
+    SI NOT history_dir.existe():
+        RETORNAR error('Historial no inicializado')
     RETORNAR exito()
 FIN FUNCION
 ```
@@ -100,28 +101,25 @@ FIN FUNCION
 ### 4.1 Flujo Paso a Paso
 
 ```
-PASO 1: Cliente POST → /api/diagram/generate con JSON válido.
-PASO 2: API valida campos obligatorios.
-PASO 3: Servicio calcula hash SHA1 del código.
-PASO 4: Servicio genera bytes placeholder según formato solicitado.
-PASO 5: Servicio guarda versión en disco con commit y metadatos.
-PASO 6: API responde con éxito, commit_hash y diagram_hash.
+PASO 1: El autor captura o pega código PlantUML en el editor visual.
+PASO 2: Opcionalmente ejecuta la vista previa (UC-API-002) para validar sintaxis.
+PASO 3: El autor presiona "Guardar y analizar"; la UI envía POST a /api/diagram/generate.
+PASO 4: Flask valida payload, calcula hashes y delega a `PytmDiagramService.generate_diagram`.
+PASO 5: El servicio guarda archivo PlantUML y actualiza `metadata.json` con autor/descripcion/timestamp.
+PASO 6: El endpoint responde con `commit_hash` y `diagram_hash`.
+PASO 7: La UI notifica éxito y habilita botones para historial y análisis pytm.
 ```
 
 ### 4.2 Pseudocódigo del Flujo Principal
 
 ```
-FUNCION generar_diagrama(request):
-    validar_precondiciones_uc_api_001(request)
-    metadata = construir_metadata(request)
-    resultado = diagram_service.generate_diagram(
-        diagram_name=request.json['name'],
-        code=request.json['code'],
-        format=request.json.get('format', 'svg'),
-        save_history=VERDADERO,
-        metadata=metadata
-    )
-    RETORNAR respuesta_json(resultado)
+FUNCION submit_diagram(payload):
+    respuesta = POST('/api/diagram/generate', payload)
+    SI respuesta.success:
+        actualizar_historial_local(respuesta.commit_hash)
+        habilitar_boton_analisis()
+    SINO:
+        mostrar_error(respuesta.error)
 FIN FUNCION
 ```
 
@@ -129,75 +127,43 @@ FIN FUNCION
 
 ## 5. FLUJOS ALTERNATIVOS
 
-### FA-01: Campos obligatorios ausentes
+### FA-01: Payload incompleto
 
-**Descripción:** El cliente omite `name` o `code`.
+1. El servicio detecta ausencia de `name` o `code` y responde con HTTP 400.  
+2. La UI muestra mensaje y mantiene el editor abierto para correcciones.
 
-**Trigger:** Solicitud incompleta.
+### FA-02: Reintento con contenido idéntico
 
-**Flujo:**
+1. El hash del código coincide con la versión anterior.  
+2. Se almacena un nuevo commit, pero la UI puede advertir que no hubo cambios relevantes usando `diagram_hash` en la respuesta.
 
-```
-1. API detecta ausencia de campos.
-2. API retorna HTTP 400 con mensaje de error.
-```
+### FA-03: Error al escribir metadata
 
-### FA-02: Error al persistir metadatos
-
-**Descripción:** La metadata existente está corrupta o no se puede escribir.
-
-**Trigger:** Excepción en `_write_metadata` o `_load_metadata`.
-
-**Flujo:**
-
-```
-1. Servicio intenta leer metadata y falla.
-2. Se lanza DiagramServiceError.
-3. API retorna HTTP 500 con descripción del error.
-4. Se registra el incidente para intervención manual.
-```
+1. `_write_metadata` lanza `DiagramServiceError` por JSON corrupto.  
+2. Se responde HTTP 500 y se guía al usuario a restaurar el historial (UC-API-004).
 
 ---
 
 ## 6. FLUJOS DE EXCEPCIÓN
 
-### FE-01: Ruta no disponible
+### FE-01: Directorio inaccesible
 
-```
-TRIGGER: Servicio Flask apagado.
-FLUJO:
-    Cliente recibe error de conexión.
-    Se debe escalar a equipo de operaciones.
-```
+- Trigger: el proceso no puede crear `/vagrant/api/history/<diagram>/`.  
+- Acción: se lanza excepción y la UI bloquea nuevos envíos hasta que infraestructura restaure permisos.
 
-### FE-02: Error inesperado en renderizado
+### FE-02: Error inesperado del servicio
 
-```
-TRIGGER: `generate_diagram` lanza excepción no controlada.
-FLUJO:
-    API captura excepción.
-    API responde HTTP 500 con mensaje genérico.
-    Se revisan logs del servicio para diagnóstico.
-```
+- Trigger: fallo interno en `generate_diagram`.  
+- Acción: se registra el error y se notifica al equipo para revisión manual.
 
 ---
 
 ## 7. POSTCONDICIONES
 
-### 7.1 Postcondiciones de Éxito
-
 ```
-POST-01: Versión del diagrama almacenada en `/versions/<commit>.plantuml`.
-POST-02: `metadata.json` actualizado con la nueva entrada.
-POST-03: Cliente recibe `commit_hash` y `diagram_hash` para auditoría.
-```
-
-### 7.2 Postcondiciones de Fallo
-
-```
-POST-FAIL-01: No se crea commit ni archivos nuevos.
-POST-FAIL-02: El cliente recibe información del fallo.
-POST-FAIL-03: Se requiere intervención si hay corrupción de metadata.
+POST-01: Existe un archivo `<commit>.plantuml` asociado al diagrama.
+POST-02: `metadata.json` se actualiza con la versión más reciente.
+POST-03: La UI dispone de identificadores para solicitar historial y análisis.
 ```
 
 ---
@@ -205,59 +171,22 @@ POST-FAIL-03: Se requiere intervención si hay corrupción de metadata.
 ## 8. REGLAS DE NEGOCIO
 
 ```
-RN-001: `diagram_name` y `code` son obligatorios.
-RN-002: Se generan hashes determinísticos para cada payload.
-RN-003: Cada versión crea un commit con timestamp UTC.
-RN-004: El historial se preprende con la versión más reciente.
+RN-001: Cada nombre de diagrama representa un repositorio lógico en `history/`.
+RN-002: El autor debe registrar una descripción que referencie el modelo pytm cuando aplique.
+RN-003: Solo formatos soportados por la UI (svg, png futuro) son válidos en `format`.
+RN-004: Los commits almacenados son inmutables; cualquier corrección genera una nueva versión.
 ```
 
 ---
 
-## 9. TABLA DE BASE DE DATOS
+## 9. MATRIZ DE TRAZABILIDAD
 
-_No aplica. El almacenamiento es basado en archivos y JSON._
-
----
-
-## 10. VALIDACIONES
-
-```
-VAL-01: Validación de presencia de campos obligatorios.
-VAL-02: Validación de longitud máxima del payload (16 MB por configuración Flask).
-VAL-03: Sincronización mediante `threading.Lock` durante persistencia.
-```
-
----
-
-## 11. EJEMPLOS DE USO
-
-- **Generación estándar:** La UI envía diagrama principal del proyecto y recibe hash para mostrar confirmación de guardado.
-- **Automatización CI:** Una pipeline publica diagramas derivados de modelos pytm y archiva los commits devueltos.
-
----
-
-## 12. REQUISITOS NO FUNCIONALES
-
-```
-RNF-01: El tiempo de respuesta debe ser inferior a 1 segundo para diagramas pequeños.
-RNF-02: Debe tolerar múltiples solicitudes concurrentes sin corrupción de archivos.
-RNF-03: El servicio debe registrar cualquier excepción para auditoría.
-```
-
----
-
-## 13. NOTAS ADICIONALES
-
-- En despliegues locales, los archivos se guardan bajo `/vagrant/api/history`.
-- Los metadatos utilizan formato JSON con claves `versions` y `latest` para integrarse con la UI.
-
----
-
-## 14. MATRIZ DE TRAZABILIDAD
-
-|Requisito|Fuente|Sección|
+|Elemento|Fuente|Referencia|
 |---|---|---|
-|Validación de campos obligatorios|`api/app.py`|`api_generate_diagram`|
-|Persistencia de versiones|`api/diagram_service.py`|`_store_version`|
-|Bloqueo concurrente|`api/diagram_service.py`|`self._lock`|
+|Endpoint de generación|Implementación Flask|`api/app.py`|
+|Persistencia e historial|Servicio de diagramas|`api/diagram_service.py`|
+|UI - acción de guardado|Editor HTML|`api/templates/index.html`|
 
+---
+
+**Fin del Caso de Uso UC-API-001**
