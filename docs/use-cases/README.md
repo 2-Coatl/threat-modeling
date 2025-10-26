@@ -23,7 +23,11 @@ prerequisites, expected flows, and auditing requirements.
 
 ## Current inventory
 
-| Código | Nombre                                   | Versión | Última actualización |
-|--------|-------------------------------------------|---------|----------------------|
-| UC-011 | Gestionar permisos por rol                | 1.0     | 2025-10-19           |
+| Código   | Nombre                                           | Versión | Última actualización |
+|----------|---------------------------------------------------|---------|----------------------|
+| UC-011   | Gestionar permisos por rol                        | 1.0     | 2025-10-19           |
+| UC-API-001 | Generar diagramas versionados                   | 1.0     | 2025-10-26           |
+| UC-API-002 | Previsualizar diagrama sin historial            | 1.0     | 2025-10-26           |
+| UC-API-003 | Consultar historial y versiones de diagramas    | 1.0     | 2025-10-26           |
+| UC-API-004 | Restaurar una versión previa del diagrama       | 1.0     | 2025-10-26           |
 
