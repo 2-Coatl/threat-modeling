@@ -1,5 +1,9 @@
 # UC-011: Gestionar permisos por rol
 
+> **Estado:** Archivado. Este caso de uso pertenece al sistema heredado IACT y
+> se conserva únicamente como referencia histórica; no forma parte del alcance
+> vigente de la plataforma de threat modeling.
+
 **Sistema:** IACT - IVR Analytics & Customer Tracking  
 **Caso de Uso:** UC-011  
 **Versión:** 1.0  
