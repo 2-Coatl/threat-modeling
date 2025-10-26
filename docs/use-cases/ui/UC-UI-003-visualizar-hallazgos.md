@@ -1,99 +1,87 @@
 # UC-UI-003: Visualizar hallazgos y compartir resultados
 
-**Sistema:** Threat Modeling UI (React shell)
+**Sistema:** Threat Modeling UI
 **Caso de Uso:** UC-UI-003
-**Versión:** 0.1
-**Fecha:** 2025-10-26
+**Versión:** 0.2
+**Fecha:** 2025-10-27
 
 ---
 
 ## 1. INFORMACIÓN GENERAL
 
-|Atributo|Descripción|
+|Campo|Detalle|
 |---|---|
 |**Código**|UC-UI-003|
 |**Nombre**|Visualizar hallazgos y compartir resultados|
-|**Prioridad**|🟡 Media|
-|**Actores**|• Auditor<br>• Stakeholder de negocio|
-|**Tipo**|Consumo de información|
-|**Frecuencia de Uso**|Variable|
-|**Complejidad**|Media|
+|**Actor primario**|AUTOR FUNCIONAL|
+|**Actores de soporte**|REVISOR DE SEGURIDAD, STAKEHOLDER DE NEGOCIO|
+|**Frecuencia estimada**|Semanal|
+|**Prioridad**|Media — permite comunicar riesgos detectados|
 
 ---
 
-## 2. DESCRIPCIÓN
+## 2. PROPÓSITO Y ALCANCE
 
-### 2.1 Propósito
-
-Presentar los hallazgos de amenazas y los artefactos generados por la API en una
-experiencia navegable que facilite el seguimiento y la comunicación.
-
-### 2.2 Objetivo
-
-- Destacar hallazgos críticos y altos con indicadores visuales.
-- Permitir la descarga y el uso compartido de reportes renderizados.
-- Mantener la sincronización con el historial de versiones analizadas.
-
-### 2.3 Alcance
-
-Comprende las vistas de reportes y tableros proyectadas para `ui/src/modules/reports/`
-y su integración con plantillas bajo `api/templates/` cuando corresponda.
+- **Propósito:** Facilitar que el AUTOR FUNCIONAL y los interesados revisen los hallazgos del análisis y los compartan con su equipo.
+- **Resultado esperado:** Los hallazgos se presentan en la UI con filtros útiles y opciones para exportar o distribuir la información.
+- **Alcance incluye:**
+  - ✅ Mostrar el resumen del análisis con clasificación por severidad.
+  - ✅ Permitir filtrar y buscar hallazgos relevantes.
+  - ✅ Compartir resultados mediante descarga o enlace controlado.
+- **Fuera de alcance:**
+  - ❌ Registrar correcciones (cubre UC-API-008).
+  - ❌ Capturar compromisos de mitigación (se gestiona en herramientas externas).
 
 ---
 
 ## 3. PRECONDICIONES
 
-1. Existen resultados disponibles generados por `UC-API-009`.
-2. El usuario dispone de permisos de lectura para el proyecto.
-3. La configuración de rutas públicas (`outputs-url`) está sincronizada con la UI.
+- Existe un análisis completado con resultados disponibles.
+- El AUTOR FUNCIONAL o el REVISOR DE SEGURIDAD tienen permisos para consultar hallazgos.
+- El navegador cuenta con conectividad hacia la API.
 
 ---
 
-## 4. FLUJO PRINCIPAL
+## 4. FLUJO PRINCIPAL (HAPPY PATH)
 
-1. La UI muestra la lista de hallazgos recientes con filtros por severidad.
-2. El usuario selecciona un hallazgo y revisa el resumen en la misma vista.
-3. Desde la UI se abre el reporte detallado hospedado por la API (`UC-API-009`).
-4. El usuario copia o comparte enlaces públicos habilitados por infraestructura.
-
----
-
-## 5. EXCEPCIONES RELEVANTES
-
-- **FE-01:** Reporte no disponible → Mostrar mensaje y ofrecer regenerar análisis.
-- **FE-02:** Enlace público inhabilitado → Notificar configuración faltante en infraestructura.
-- **FE-03:** Hallazgos sin contexto → Sugerir ejecutar nuevamente el análisis para refrescar datos.
+|Paso|Actor|Interacción|
+|---|---|---|
+|1|AUTOR FUNCIONAL|Accede a la sección de hallazgos desde la UI.
+|2|SISTEMA|Recupera los resultados del análisis vigente y muestra el resumen.
+|3|AUTOR FUNCIONAL|Filtra hallazgos por severidad o palabra clave.
+|4|SISTEMA|Actualiza la vista con el subconjunto filtrado e indica el total afectado.
+|5|AUTOR FUNCIONAL|Selecciona hallazgos y genera un enlace o archivo para compartir.
+|6|SISTEMA|Prepara la exportación elegida y confirma que el recurso está disponible para los destinatarios permitidos.
 
 ---
 
-## 6. REQUISITOS FUNCIONALES DESTACADOS
+## 5. FLUJOS ALTERNOS
 
-|ID|Descripción|
-|--|-----------|
-|RF-01|Permitir filtrar hallazgos por severidad, módulo y fecha de ejecución.|
-|RF-02|Ofrecer exportación en CSV/JSON de la lista de hallazgos visible.|
-|RF-03|Resaltar enlaces caducados o inválidos con mensajes accionables.|
-
----
-
-## 7. REQUISITOS NO FUNCIONALES
-
-- Cargar la vista de hallazgos en < 2 segundos considerando datasets de 200 filas.
-- Garantizar accesibilidad AA (contrastes, uso de teclado, lector de pantalla).
-- Proveer fallback cuando el navegador bloquea ventanas emergentes para reportes.
+|ID|Condición|Curso de acción|
+|---|---|---|
+|FA-01|Se requiere comparar con un análisis anterior|El SISTEMA ofrece seleccionar otra ejecución y muestra las diferencias relevantes.
+|FA-02|El AUTOR FUNCIONAL delega la revisión|El SISTEMA permite notificar al REVISOR DE SEGURIDAD con un enlace directo y permisos temporales.
 
 ---
 
-## 8. RELACIONES
+## 6. EXCEPCIONES
 
-|Relación|Documento|
-|---|---|
-|Depende de|`docs/use-cases/UC-API-009-presentar-hallazgos-analisis.md`|
-|Relacionado con|`docs/use-cases/UC-API-003-consultar-historial-diagrama.md`|
+|ID|Evento|Respuesta observable|
+|---|---|---|
+|FE-01|No existen análisis recientes|El SISTEMA indica que se debe ejecutar UC-UI-002 antes de visualizar hallazgos.
+|FE-02|La exportación falla|El SISTEMA informa la causa y mantiene visible el resumen para reintentar.
 
 ---
 
-## 9. PENDIENTES
+## 7. POSTCONDICIONES
 
-- Diseñar componentes en `ui/src/modules/reports/` para tarjetas de hallazgos.
-- Coordinar con equipo de infraestructura la publicación segura de reportes estáticos.
+- **Éxito:** Los hallazgos quedan visibles, filtrados según necesidad y, si aplica, compartidos con los interesados.
+- **Fallo:** No se generan nuevas exportaciones y la UI mantiene el estado previo indicando la incidencia.
+
+---
+
+## 8. REQUISITOS ESPECIALES
+
+- La UI debe resaltar hallazgos críticos por defecto.
+- Las exportaciones deben incluir fecha y autor de la operación para trazabilidad.
+

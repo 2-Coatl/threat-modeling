@@ -1,108 +1,88 @@
 # UC-UI-001: Gestionar diagramas y versiones
 
-**Sistema:** Threat Modeling UI (React shell)
+**Sistema:** Threat Modeling UI
 **Caso de Uso:** UC-UI-001
-**Versión:** 0.1
-**Fecha:** 2025-10-26
+**Versión:** 0.2
+**Fecha:** 2025-10-27
 
 ---
 
 ## 1. INFORMACIÓN GENERAL
 
-|Atributo|Descripción|
+|Campo|Detalle|
 |---|---|
 |**Código**|UC-UI-001|
 |**Nombre**|Gestionar diagramas y versiones|
-|**Prioridad**|🟢 Alta|
-|**Actores**|• Autor funcional<br>• Revisor de seguridad|
-|**Tipo**|Gestión operativa|
-|**Frecuencia de Uso**|Diaria|
-|**Complejidad**|Alta|
+|**Actor primario**|AUTOR FUNCIONAL|
+|**Actores de soporte**|REVISOR DE SEGURIDAD|
+|**Frecuencia estimada**|Diaria|
+|**Prioridad**|Alta — habilita el ciclo de edición y publicación|
 
 ---
 
-## 2. DESCRIPCIÓN
+## 2. PROPÓSITO Y ALCANCE
 
-### 2.1 Propósito
-
-Ofrecer a los usuarios un editor web integrado para crear, versionar y restaurar
-diagramas de threat modeling consumiendo los endpoints documentados en
-`UC-API-000`, `UC-API-001`, `UC-API-002`, `UC-API-003`, `UC-API-004` y
-`UC-API-008`.
-
-### 2.2 Objetivo
-
-- Crear nuevas versiones de diagramas PlantUML.
-- Previsualizar cambios antes de persistirlos.
-- Consultar historial y metadata sin abandonar la UI.
-- Ejecutar rollback controlado a versiones anteriores.
-
-### 2.3 Alcance
-
-Incluye interacciones del editor (`ui/src/pages/HomePage.jsx`) y los módulos
-especializados planificados bajo `ui/src/modules/modeling/` y
-`ui/src/modules/history/`.
+- **Propósito:** Brindar al AUTOR FUNCIONAL un entorno web para crear, revisar y mantener diagramas de threat modeling con control de versiones.
+- **Resultado esperado:** El autor mantiene el diagrama actualizado, conoce su historial y puede preparar el análisis correspondiente.
+- **Alcance incluye:**
+  - ✅ Editar el diagrama activo con soporte de historial y comentarios.
+  - ✅ Solicitar previsualizaciones y guardados de forma integrada.
+  - ✅ Iniciar acciones de análisis o restauración apoyándose en la API.
+- **Fuera de alcance:**
+  - ❌ Aprobar hallazgos de seguridad.
+  - ❌ Administrar permisos de acceso (gestionados por la plataforma).
 
 ---
 
 ## 3. PRECONDICIONES
 
-1. Usuario autenticado con permisos de edición.
-2. API disponible y accesible en el entorno configurado en `ui/src/state/appConfig`.
-3. Directorios de historial y artefactos con permisos adecuados.
+- El AUTOR FUNCIONAL cuenta con credenciales válidas y acceso al proyecto.
+- La API se encuentra disponible para atender solicitudes.
+- Existen diagramas previos o el autor tiene permiso para crear uno nuevo.
 
 ---
 
-## 4. FLUJO PRINCIPAL
+## 4. FLUJO PRINCIPAL (HAPPY PATH)
 
-1. El usuario abre el editor y carga el proyecto activo.
-2. Solicita previsualización del diagrama (consume `UC-API-002`).
-3. Guarda una nueva versión (consume `UC-API-001`).
-4. Consulta historial y selecciona versión para inspección (`UC-API-003`).
-5. Ejecuta rollback si es necesario (`UC-API-004` y `UC-API-008`).
-
----
-
-## 5. EXCEPCIONES RELEVANTES
-
-- **FE-01:** Error de renderizado → Mostrar alerta, permitir reintento (`UC-API-002`).
-- **FE-02:** Falta de permisos → Bloquear acciones mutables y mostrar contacto de soporte.
-- **FE-03:** Rollback no disponible → Advertir causas (versionado bloqueado u operaciones pendientes).
+|Paso|Actor|Interacción|
+|---|---|---|
+|1|AUTOR FUNCIONAL|Accede a la UI y selecciona el proyecto a editar.
+|2|SISTEMA|Muestra el editor con el diagrama vigente y su historial reciente.
+|3|AUTOR FUNCIONAL|Realiza ajustes en el contenido y solicita previsualizar los cambios.
+|4|SISTEMA|Muestra la vista previa y resalta posibles advertencias.
+|5|AUTOR FUNCIONAL|Confirma el guardado registrando la descripción del cambio.
+|6|SISTEMA|Informa que la versión quedó registrada y actualiza el historial visible.
+|7|AUTOR FUNCIONAL|Opcionalmente inicia el análisis o navega a los hallazgos recientes.
 
 ---
 
-## 6. REQUISITOS FUNCIONALES DESTACADOS
+## 5. FLUJOS ALTERNOS
 
-|ID|Descripción|
-|--|-----------|
-|RF-01|Mantener autosave del contenido del editor mientras se esperan respuestas de la API.|
-|RF-02|Mostrar cronología de commits con diff resumido y etiquetas de severidad.|
-|RF-03|Permitir recuperar versiones seleccionadas en modo sólo lectura antes de confirmar rollback.|
-
----
-
-## 7. REQUISITOS NO FUNCIONALES
-
-- La UI debe conservar estado del editor durante actualizaciones en caliente.
-- Las llamadas a la API deben contener trazas (`X-Request-ID`) para auditoría.
-- Responder en < 1 segundo para operaciones de navegación local (sin contar roundtrip API).
+|ID|Condición|Curso de acción|
+|---|---|---|
+|FA-01|Se detectan errores durante la previsualización|El SISTEMA comunica los errores y permanece en modo edición para que el AUTOR FUNCIONAL corrija.
+|FA-02|El autor decide descartar cambios|El SISTEMA restaura la última versión confirmada sin registrar nueva actividad.
 
 ---
 
-## 8. RELACIONES
+## 6. EXCEPCIONES
 
-|Relación|Documento|
-|---|---|
-|Depende de|`docs/use-cases/UC-API-000-flujo-operativo-modelado.md`|
-|Depende de|`docs/use-cases/UC-API-001-generar-diagrama-versionado.md`|
-|Depende de|`docs/use-cases/UC-API-002-previsualizar-diagrama.md`|
-|Depende de|`docs/use-cases/UC-API-003-consultar-historial-diagrama.md`|
-|Depende de|`docs/use-cases/UC-API-004-restaurar-version-diagrama.md`|
-|Depende de|`docs/use-cases/UC-API-008-gestionar-correcciones-historial.md`|
+|ID|Evento|Respuesta observable|
+|---|---|---|
+|FE-01|La sesión expira mientras se edita|El SISTEMA guarda temporalmente el contenido local y solicita volver a autenticarse.
+|FE-02|La API no está disponible|El SISTEMA bloquea acciones de guardado, informa la falla y sugiere reintentar más tarde.
 
 ---
 
-## 9. PENDIENTES
+## 7. POSTCONDICIONES
 
-- Definir componentes concretos en `ui/src/modules/modeling/` para editor y vista de historial.
-- Sincronizar diseño UI con equipo UX antes del primer incremento funcional.
+- **Éxito:** El diagrama se actualiza con la nueva versión y el historial refleja la actividad.
+- **Fallo:** No se guardan cambios y se mantiene la última versión válida con el motivo del fallo comunicado.
+
+---
+
+## 8. REQUISITOS ESPECIALES
+
+- El editor debe preservar borradores locales para prevenir pérdida de trabajo.
+- Las notificaciones deben indicar claramente qué caso de uso API soportó cada acción para facilitar la trazabilidad.
+

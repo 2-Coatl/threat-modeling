@@ -1,102 +1,87 @@
 # UC-UI-002: Ejecutar análisis y generar artefactos
 
-**Sistema:** Threat Modeling UI (React shell)
+**Sistema:** Threat Modeling UI
 **Caso de Uso:** UC-UI-002
-**Versión:** 0.1
-**Fecha:** 2025-10-26
+**Versión:** 0.2
+**Fecha:** 2025-10-27
 
 ---
 
 ## 1. INFORMACIÓN GENERAL
 
-|Atributo|Descripción|
+|Campo|Detalle|
 |---|---|
 |**Código**|UC-UI-002|
 |**Nombre**|Ejecutar análisis y generar artefactos|
-|**Prioridad**|🟢 Alta|
-|**Actores**|• Autor funcional<br>• Analista de seguridad|
-|**Tipo**|Ejecución asistida|
-|**Frecuencia de Uso**|Semanal|
-|**Complejidad**|Media|
+|**Actor primario**|AUTOR FUNCIONAL|
+|**Actores de soporte**|REVISOR DE SEGURIDAD|
+|**Frecuencia estimada**|Semanal|
+|**Prioridad**|Alta — conecta la fase de modelado con la de evaluación|
 
 ---
 
-## 2. DESCRIPCIÓN
+## 2. PROPÓSITO Y ALCANCE
 
-### 2.1 Propósito
-
-Permitir a los usuarios lanzar análisis pytm, generar renders PlantUML y
-solicitar artefactos adicionales desde la UI, orquestando los casos de uso
-`UC-API-005`, `UC-API-006` y `UC-API-007`.
-
-### 2.2 Objetivo
-
-- Ejecutar pipelines de análisis y visualizar progreso.
-- Descargar diagramas y reportes generados.
-- Registrar trazabilidad de ejecuciones (timestamp, autor, versión base).
-
-### 2.3 Alcance
-
-Cubre la futura sección de "Análisis" dentro del shell React (`ui/src/modules/analysis/`)
-y la coordinación con el estado global (`ui/src/state/store.js`).
+- **Propósito:** Permitir al AUTOR FUNCIONAL solicitar desde la UI el análisis de amenazas y la generación de artefactos de soporte.
+- **Resultado esperado:** El autor recibe confirmación del análisis, acceso a los hallazgos y a los artefactos necesarios para su revisión.
+- **Alcance incluye:**
+  - ✅ Seleccionar la versión del diagrama a analizar.
+  - ✅ Lanzar el análisis y monitorear su progreso.
+  - ✅ Descargar o consultar los artefactos generados.
+- **Fuera de alcance:**
+  - ❌ Modificar los hallazgos detectados.
+  - ❌ Escalar automáticamente incidentes críticos (se maneja fuera de la UI).
 
 ---
 
 ## 3. PRECONDICIONES
 
-1. Existe una versión aprobada del diagrama.
-2. La API expone los servicios de análisis y generación en el entorno activo.
-3. El usuario posee permisos de ejecución configurados en la plataforma.
+- El AUTOR FUNCIONAL tiene acceso a una versión confirmada del diagrama.
+- La API y los servicios de análisis se encuentran disponibles.
+- El proyecto cuenta con un modelo pytm asociado y listo para procesarse.
 
 ---
 
-## 4. FLUJO PRINCIPAL
+## 4. FLUJO PRINCIPAL (HAPPY PATH)
 
-1. El usuario selecciona "Ejecutar análisis" desde la UI.
-2. La UI invoca el endpoint de análisis (`UC-API-007`) y muestra progreso.
-3. Una vez completado, la UI ofrece enlaces a diagramas renderizados (`UC-API-005`).
-4. El usuario descarga artefactos adicionales (`UC-API-006`).
-5. La UI registra el resultado en un panel de ejecuciones recientes.
-
----
-
-## 5. EXCEPCIONES RELEVANTES
-
-- **FE-01:** Error de ejecución → Mostrar resumen y permitir reintento.
-- **FE-02:** Artefacto faltante → Marcar tarjeta en rojo y ofrecer acción de regenerar.
-- **FE-03:** Tiempo de espera excedido → Notificar al usuario y dejar ejecución en cola para seguimiento manual.
+|Paso|Actor|Interacción|
+|---|---|---|
+|1|AUTOR FUNCIONAL|Desde la UI, selecciona la versión del diagrama para analizar.
+|2|SISTEMA|Confirma la selección y muestra el resumen de la versión.
+|3|AUTOR FUNCIONAL|Inicia el análisis y solicita generar artefactos relacionados.
+|4|SISTEMA|Muestra el estado del análisis (en progreso, completado) y notifica al finalizar.
+|5|SISTEMA|Pone a disposición los artefactos y enlaces a los hallazgos.
+|6|AUTOR FUNCIONAL|Descarga o revisa los artefactos y comparte el resultado con el REVISOR DE SEGURIDAD.
 
 ---
 
-## 6. REQUISITOS FUNCIONALES DESTACADOS
+## 5. FLUJOS ALTERNOS
 
-|ID|Descripción|
-|--|-----------|
-|RF-01|Mostrar estados intermedios (en progreso, completado, error) en tiempo real.|
-|RF-02|Permitir descargas individuales y empaquetadas de los artefactos generados.|
-|RF-03|Registrar bitácora de ejecuciones en `localStorage` para recuperar contexto tras refrescar la página.|
-
----
-
-## 7. REQUISITOS NO FUNCIONALES
-
-- El panel debe reaccionar en < 500 ms ante actualizaciones provenientes de WebSocket o pooling.
-- Los enlaces de descarga deben validar integridad mediante hashes expuestos por la API.
-- Debe funcionar con navegadores modernos (Chrome, Firefox, Edge) en sus últimas dos versiones.
+|ID|Condición|Curso de acción|
+|---|---|---|
+|FA-01|El análisis tarda más de lo esperado|El SISTEMA informa tiempos estimados y permite que el AUTOR FUNCIONAL continúe trabajando mientras se completa.
+|FA-02|El autor necesita cancelar el análisis|El SISTEMA solicita confirmación, detiene la ejecución y mantiene la última versión analizada.
 
 ---
 
-## 8. RELACIONES
+## 6. EXCEPCIONES
 
-|Relación|Documento|
-|---|---|
-|Depende de|`docs/use-cases/UC-API-005-renderizar-modelo-pytm.md`|
-|Depende de|`docs/use-cases/UC-API-006-generar-artefactos-plantuml.md`|
-|Depende de|`docs/use-cases/UC-API-007-analizar-amenazas-pytm.md`|
+|ID|Evento|Respuesta observable|
+|---|---|---|
+|FE-01|Falla el análisis por un error técnico|El SISTEMA comunica la falla, conserva el último resultado válido y ofrece reintentar.
+|FE-02|No se pueden generar artefactos|El SISTEMA detiene la operación, informa el motivo y sugiere reintento tras solucionar la causa.
 
 ---
 
-## 9. PENDIENTES
+## 7. POSTCONDICIONES
 
-- Definir componente `ui/src/modules/analysis/AnalysisPanel.jsx` y su contrato de datos.
-- Alinear con infraestructura el mecanismo de notificación (WebSocket vs pooling).
+- **Éxito:** El análisis se completa, los hallazgos quedan accesibles y los artefactos pueden descargarse.
+- **Fallo:** No se generan resultados nuevos y la UI mantiene el estado previo indicando la razón del fallo.
+
+---
+
+## 8. REQUISITOS ESPECIALES
+
+- La UI debe notificar por canal visible (banner o panel) cuando el análisis finaliza.
+- Debe registrarse qué usuario inició el análisis para trazabilidad.
+
