@@ -23,12 +23,13 @@ prerequisites, expected flows, and auditing requirements.
 
 ## Current inventory
 
-| Código   | Nombre                                           | Versión | Última actualización |
-|----------|---------------------------------------------------|---------|----------------------|
-| UC-011   | Gestionar permisos por rol                        | 1.0     | 2025-10-19           |
-| UC-API-001 | Diseñar y versionar diagramas PlantUML          | 2.0     | 2025-10-26           |
-| UC-API-002 | Previsualizar cambios en el editor              | 2.0     | 2025-10-26           |
-| UC-API-003 | Analizar amenazas con pytm y generar reporte    | 1.0     | 2025-10-26           |
-| UC-API-004 | Gestionar correcciones con historial y rollback | 1.0     | 2025-10-26           |
-| UC-API-005 | Presentar hallazgos y artefactos del análisis   | 1.0     | 2025-10-26           |
+| Código     | Nombre                                           | Versión | Última actualización |
+|------------|---------------------------------------------------|---------|----------------------|
+| UC-011     | Gestionar permisos por rol                        | 1.0     | 2025-10-19           |
+| UC-API-000 | Operar el flujo de modelado con PlantUML y pytm   | 1.0     | 2025-10-26           |
+| UC-API-001 | Diseñar y versionar diagramas PlantUML            | 2.0     | 2025-10-26           |
+| UC-API-002 | Previsualizar cambios en el editor                | 2.0     | 2025-10-26           |
+| UC-API-003 | Analizar amenazas con pytm y generar reporte      | 1.0     | 2025-10-26           |
+| UC-API-004 | Gestionar correcciones con historial y rollback   | 1.0     | 2025-10-26           |
+| UC-API-005 | Presentar hallazgos y artefactos del análisis     | 1.0     | 2025-10-26           |
 
