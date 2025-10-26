@@ -796,12 +796,8 @@ Todos los scripts siguen estos principios:
 - **Sin Fallas Silenciosas**: Manejo explícito de errores
 - **Principios SOLID**: Responsabilidad única por script
 
-> Consulta `AGENTS.md` en la raíz del repositorio para lineamientos generales y
-> revisa los archivos `AGENTS.md` específicos de cada directorio (por ejemplo
-> `bin/AGENTS.md` o `.github/AGENTS.md`) cuando modifiques assets en esas
-> rutas. El archivo de la raíz se mantiene ahí para que sus reglas apliquen a
-> todo el árbol — moverlo a `.github/` o `.codex/` limitaría el alcance solo a
-> esos directorios.
+> Si modificas automatizaciones bajo `.github/`, revisa
+> `.github/AGENTS.md` para las convenciones específicas de esos archivos.
 
 Revisa el documento [Threat Modeling Engineering Ruleset](docs/standards/engineering-ruleset.md)
 para lineamientos completos sobre Bash, Python (Flask + PyTM), React, SCSS y
