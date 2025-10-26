@@ -1,255 +1,94 @@
-# UC-API-004: RESTAURAR UNA VERSIÓN PREVIA DEL DIAGRAMA
+# UC-API-004: Restaurar versión de diagrama
 
-**Sistema:** Threat Modeling Platform API  
-**Caso de Uso:** UC-API-004  
+**Sistema:** Threat Modeling Platform API
+**Caso de Uso:** UC-API-004
 **Versión:** 1.1
-**Fecha:** 2025-10-26
+**Fecha:** 2025-10-27
 
 ---
 
 ## 1. INFORMACIÓN GENERAL
 
-|Atributo|Descripción|
+|Campo|Detalle|
 |---|---|
 |**Código**|UC-API-004|
-|**Nombre**|Restaurar una versión previa del diagrama|
-|**Prioridad**|🔴 Alta|
-|**Actores**|• Servicio de UI (`ui`)
-• Equipo de seguridad|
-|**Tipo**|Recuperación / mantenimiento|
-|**Frecuencia de Uso**|Baja (solo ante incidentes)|
-|**Complejidad**|Media|
+|**Nombre**|Restaurar versión de diagrama|
+|**Actor primario**|SERVICIO DE UI|
+|**Actores de soporte**|AUTOR FUNCIONAL, REVISOR DE SEGURIDAD|
+|**Frecuencia estimada**|Baja|
+|**Prioridad**|Media — garantiza la posibilidad de revertir cambios dañinos|
 
 ---
 
-## 2. DESCRIPCIÓN
+## 2. PROPÓSITO Y ALCANCE
 
-### 2.1 Propósito
-
-Permitir que la API reconstruya la versión actual de un diagrama a partir de un commit histórico, conservando trazabilidad de la restauración y manteniendo la relación con el modelo `pytm` que pudo haber originado la versión rescatada.
-
-### 2.2 Objetivo
-
-- Validar que el commit solicitado exista.
-- Registrar un nuevo commit indicando que proviene de un rollback.
-- Entregar identificadores del nuevo commit al cliente.
-
-### 2.3 Alcance
-
-**Incluye:**
-
-- ✅ Recuperar código de la versión seleccionada.
-- ✅ Crear una nueva entrada en metadata con descripción "Rollback to <commit>".
-- ✅ Generar una nueva versión con autor `system` y descripción "Rollback to <commit>", dejando rastro explícito del punto de restauración.
-- ✅ Retornar el hash del nuevo commit generado.
-
-**NO Incluye:**
-
-- ❌ Modificar commits históricos.
-- ❌ Cambiar descripciones previas.
-- ❌ Reprocesar imágenes existentes.
-
-### 2.4 Restricciones Especiales
-
-1. Se utiliza el author `system` al registrar el rollback.
-2. El formato se hereda de la versión más reciente disponible.
-3. El nuevo commit se agrega al inicio del historial como versión más reciente.
-4. Si la versión restaurada proviene de `pytm`, se requiere documentar manualmente la referencia al modelo en la descripción resultante si se necesita mayor contexto.
+- **Propósito:** Recuperar una versión previa del diagrama cuando la actual presenta errores o necesita revisión posterior.
+- **Resultado esperado:** El historial registra la restauración y deja activa la versión seleccionada para continuar el análisis.
+- **Alcance incluye:**
+  - ✅ Seleccionar la versión objetivo a restaurar.
+  - ✅ Guardar la versión restaurada como la más reciente con anotaciones de auditoría.
+  - ✅ Confirmar al actor que el contenido se revirtió exitosamente.
+- **Fuera de alcance:**
+  - ❌ Resolver conflictos de contenido cuando hay ediciones simultáneas (gestionados por gobernanza de equipo).
+  - ❌ Eliminar versiones del historial.
 
 ---
 
 ## 3. PRECONDICIONES
 
-### 3.1 Precondiciones del Sistema
-
-```
-PRECOND-01: Historial del diagrama accesible.
-PRECOND-02: Commit objetivo existente.
-PRECOND-03: Servicio Flask operativo.
-```
-
-### 3.2 Precondiciones del Usuario
-
-```
-PRECOND-04: Usuario con permisos de mantenimiento.
-PRECOND-05: Solicitud JSON con `name` y `commit_hash`.
-```
-
-### 3.3 Validación de Precondiciones
-
-**Pseudocódigo:**
-
-```
-FUNCION validar_precondiciones_uc_api_004(request):
-    SI 'name' NO EN request.json O 'commit_hash' NO EN request.json:
-        RETORNAR error('Parámetros insuficientes')
-    validar_historial(request.json['name'], request.json['commit_hash'])
-    RETORNAR exito()
-FIN FUNCION
-```
+- Existe un historial con al menos una versión anterior disponible.
+- El actor cuenta con permisos de edición sobre el diagrama.
+- El repositorio histórico acepta nuevas escrituras para registrar la restauración.
 
 ---
 
-## 4. FLUJO PRINCIPAL
+## 4. FLUJO PRINCIPAL (HAPPY PATH)
 
-### 4.1 Flujo Paso a Paso
-
-```
-PASO 1: Cliente POST → /api/diagram/rollback.
-PASO 2: API valida parámetros y existencia del commit.
-PASO 3: Servicio lee código de la versión solicitada.
-PASO 4: Servicio crea nuevo commit con descripción "Rollback to <commit>" y autor `system`, dejando constancia de la restauración.
-PASO 5: API responde con `new_commit` y `rolled_back_to`.
-```
-
-### 4.2 Pseudocódigo del Flujo Principal
-
-```
-FUNCION restaurar_version(request):
-    validar_precondiciones_uc_api_004(request)
-    nuevo_commit = diagram_service.rollback(
-        diagram_name=request.json['name'],
-        commit_hash=request.json['commit_hash']
-    )
-    RETORNAR respuesta_json({
-        success: VERDADERO,
-        diagram: request.json['name'],
-        rolled_back_to: request.json['commit_hash'],
-        new_commit: nuevo_commit
-    })
-FIN FUNCION
-```
+|Paso|Actor|Interacción|
+|---|---|---|
+|1|SERVICIO DE UI|Solicita restaurar una versión específica identificada por el actor.
+|2|SISTEMA|Confirma permisos y existencia de la versión seleccionada.
+|3|SISTEMA|Recupera el contenido asociado y lo copia como la versión más reciente.
+|4|SISTEMA|Anota en el historial que la acción corresponde a una restauración, incluyendo quién la solicitó y por qué.
+|5|SISTEMA|Responde con el identificador de la nueva versión restaurada.
+|6|SERVICIO DE UI|Informa al AUTOR FUNCIONAL que el diagrama volvió al estado solicitado.
 
 ---
 
-## 5. FLUJOS ALTERNATIVOS
+## 5. FLUJOS ALTERNOS
 
-### FA-01: Commit objetivo inexistente
-
-**Descripción:** El commit indicado no existe.
-
-**Trigger:** Archivo de versión ausente.
-
-**Flujo:**
-
-```
-1. `get_version` lanza `DiagramServiceError`.
-2. API responde HTTP 500/404 con mensaje de error.
-3. Cliente notifica que el commit no es válido.
-```
-
-### FA-02: Historial vacío
-
-**Descripción:** Se intenta rollback en diagrama sin historial.
-
-**Trigger:** `_load_metadata` retorna lista vacía.
-
-**Flujo:**
-
-```
-1. Servicio detecta que no hay versiones.
-2. Retorna excepción.
-3. API responde HTTP 500 y registra incidente.
-```
+|ID|Condición|Curso de acción|
+|---|---|---|
+|FA-01|La versión actual ya coincide con la solicitada|El SISTEMA avisa que no se requieren cambios y mantiene el estado.
 
 ---
 
-## 6. FLUJOS DE EXCEPCIÓN
+## 6. EXCEPCIONES
 
-### FE-01: Error de escritura
-
-```
-TRIGGER: No se puede escribir el nuevo commit.
-FLUJO:
-    Servicio lanza excepción de IO.
-    API responde HTTP 500.
-    Se revisan permisos de filesystem.
-```
-
-### FE-02: Bloqueo concurrente
-
-```
-TRIGGER: Otro proceso está escribiendo historial.
-FLUJO:
-    `threading.Lock` serializa la operación.
-    Si falla, API debe reintentar o devolver error temporal.
-```
+|ID|Evento|Respuesta observable|
+|---|---|---|
+|FE-01|La versión solicitada no existe|El SISTEMA rechaza la restauración y orienta al actor para seleccionar una versión válida.
+|FE-02|Falla el guardado de la versión restaurada|El SISTEMA informa la falla, conserva la versión previa y sugiere reintentar tras soporte técnico.
 
 ---
 
 ## 7. POSTCONDICIONES
 
-### 7.1 Postcondiciones de Éxito
-
-```
-POST-01: Nueva versión registrada como la más reciente.
-POST-02: Metadata actualizada con descripción de rollback.
-POST-03: Cliente obtiene identificador del nuevo commit.
-```
-
-### 7.2 Postcondiciones de Fallo
-
-```
-POST-FAIL-01: No se crean nuevas versiones.
-POST-FAIL-02: Cliente recibe error detallado.
-```
+- **Éxito:** El historial incorpora una entrada que marca la restauración y el diagrama activo refleja el contenido elegido.
+- **Fallo:** El diagrama permanece sin cambios y se registra la razón del fallo para seguimiento.
 
 ---
 
-## 8. REGLAS DE NEGOCIO
+## 8. REQUISITOS ESPECIALES
 
-```
-RN-001: Solo se permite rollback a commits existentes.
-RN-002: Cada rollback genera un commit nuevo (no sobrescribe historial).
-RN-003: El autor registrado debe ser `system` salvo configuraciones especiales.
-```
+- Las restauraciones deben quedar claramente identificadas para auditoría futura.
+- Los mensajes al actor deben explicar el impacto de la restauración en versiones posteriores.
 
 ---
 
-## 9. TABLA DE BASE DE DATOS
+## 9. REFERENCIAS Y TRAZABILIDAD
 
-_No aplica. Persistencia basada en archivos._
-
----
-
-## 10. VALIDACIONES
-
-```
-VAL-01: Validar campos obligatorios en la solicitud.
-VAL-02: Confirmar existencia del commit objetivo.
-VAL-03: Asegurar que la escritura del nuevo commit sea exitosa.
-```
-
----
-
-## 11. EJEMPLOS DE USO
-
-- **Recuperación ante error humano:** Se restaura la versión previa a un cambio erróneo.
-- **Respuesta a incidente:** Se vuelve a la última versión conocida segura tras detectar actividad maliciosa.
-
----
-
-## 12. REQUISITOS NO FUNCIONALES
-
-```
-RNF-01: El rollback debe ejecutarse en menos de 1 segundo para diagramas pequeños.
-RNF-02: Debe quedar evidencia en logs de auditoría.
-```
-
----
-
-## 13. NOTAS ADICIONALES
-
-- La UI debe confirmar con el usuario antes de ejecutar el rollback.
-- Considerar notificar al canal de operaciones cuando se realice esta acción.
-
----
-
-## 14. MATRIZ DE TRAZABILIDAD
-
-|Requisito|Fuente|Sección|
-|---|---|---|
-|Rollback|`api/app.py`|`api_rollback`|
-|Creación de commit `system`|`api/diagram_service.py`|`rollback`|
-|Persistencia|`api/diagram_service.py`|`_store_version`|
+- **Casos de uso relacionados:** UC-UI-001, UC-API-003.
+- **Artefactos complementarios:** No aplica (diagramas de rollback pendientes de adjuntar).
+- **Notas adicionales:** Proporciona el mecanismo de recuperación utilizado en UC-API-008.
 

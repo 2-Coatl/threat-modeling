@@ -23,32 +23,29 @@ pragmatism and clarity over dogmatism.
 
 ```
 /                    # Monorepo root
-├── infrastructure/  # Shared shell utilities, policy tooling, system assets
-│   ├── bootstrap.sh # Provisioning orchestrator (Bash)
+├── api/             # Flask API, PyTM orchestration, PlantUML helpers
+│   ├── app.py       # Flask application factory and blueprint registration
+│   ├── diagram_service.py # Domain logic for diagram lifecycle
+│   ├── models/      # Threat modeling domain modules and pytm models
+│   ├── plantweb/    # PlantUML integration + rendering helpers
+│   └── templates/   # Jinja2 templates for reports and HTML views
+├── infrastructure/  # Shell utilities, provisioning assets, policy tooling
 │   ├── bin/         # CLI wrappers for installers and generators
+│   ├── bootstrap.sh # Provisioning orchestrator (Bash)
 │   ├── config/      # Environment defaults and template variables
 │   ├── scripts/     # Installation, setup, test, and CI helpers (Bash)
 │   └── utils/       # Shared shell helpers sourced by installers
-├── config/          # Global variables, shell profiles, templates
-├── dashboard/       # Python Flask + PyTM application (monolith core)
-│   ├── plantweb/    # PlantUML helpers and CLI
-│   ├── templates/   # Flask Jinja templates
-│   ├── static/
-│   │   ├── js/      # React bundles (Webpack output)
-│   │   └── css/     # Compiled SCSS
-│   └── models/      # Threat modeling domain modules
-└── frontend/        # Source for React + SCSS (Webpack build input)
-    ├── src/
-    │   ├── components/
-    │   ├── hooks/
-    │   ├── pages/
-    │   └── styles/
-    └── webpack/    # Build configuration and tooling
+├── ui/              # React + SCSS single-page application source
+│   ├── src/         # Components, hooks, pages, and feature modules
+│   ├── public/      # Static assets served directly
+│   └── webpack/     # Build configuration and tooling
+├── docs/            # Standards, use cases, and project documentation
+└── test/            # Automated checks and sample fixtures
 ```
 
-*Create `frontend/` directories as needed when the web client evolves.  Backend
-Flask blueprints live inside `dashboard/` and should expose narrow interfaces to
-frontend bundles via REST endpoints.*
+*Expand `ui/src/` with feature-specific subdirectories as the web client grows.
+Flask routes and blueprints live under `api/` and expose narrow REST interfaces
+for the SPA without tight coupling.*
 
 ## 3. Naming Conventions
 
@@ -67,17 +64,17 @@ Additional rules:
 - Prefix private helpers with `_` in Python and `__` in SCSS (BEM modifiers).
 - Constants use `UPPER_SNAKE_CASE` in Python/TypeScript and `readonly` exports
   when possible.
-- Test modules mirror the file under test (`test_dashboard_api.py`,
+- Test modules mirror the file under test (`test_api_routes.py`,
   `App.spec.tsx`).
 
 ## 4. Layering Rules
 
-1. **Presentation (React/Flask routes)** must depend only on application
-   services defined in `dashboard/services/` or feature modules.  They never
-   perform direct infrastructure work.
-2. **Domain/Business logic** (`dashboard/models/`, `dashboard/services/`) should
-   be framework-agnostic.  PlantUML or PyTM orchestration belongs here when it
-   represents business rules.
+1. **Presentation (React/Flask routes)** lives in `api/app.py`, supporting
+   blueprints under `api/`, and components inside `ui/src/`. These layers only
+   orchestrate domain services and never perform infrastructure work.
+2. **Domain/Business logic** (`api/diagram_service.py`, `api/models/`) stays
+   framework agnostic. PlantUML or PyTM orchestration belongs here when it
+   expresses business rules.
 3. **Infrastructure utilities** (shell installers, adapters, file IO) remain in
    `infrastructure/` (CLI wrappers under `infrastructure/bin/`, workflows under
    `infrastructure/scripts/`).  Python infrastructure adapters belong in
@@ -104,9 +101,9 @@ Additional rules:
   `infrastructure/scripts/ci/run-policy-checks.sh`).
 - Flask blueprints reside in `api/`.  Each blueprint file defines a
   `create_blueprint()` factory.
-- Business logic for threat modeling lives in `api/models/` or
-  `api/services/`.  PyTM integration functions should avoid Flask imports
-  to remain testable.
+- Business logic for threat modeling lives in `api/models/` or dedicated modules
+  such as `api/diagram_service.py`. PyTM integration functions should avoid Flask
+  imports to remain testable.
 - Use Google-style docstrings for modules, classes, and functions that form the
   public API.
 - Raise descriptive exceptions rather than returning sentinel values.  Handle
@@ -144,9 +141,12 @@ Additional rules:
 
 ## 10. Git Hygiene
 
-- Conventional Commits enforced by `.githooks/commit-msg`.
-- Hooks live in `.githooks/`; run `infrastructure/bin/setup` once to configure
-  `core.hooksPath`.
+- Conventional Commits are enforced by `.githooks/commit-msg`; keep messages in
+  the `<type>(<scope>): <description>` format and never bypass the hook with
+  `--no-verify`.
+- Hooks live in `.githooks/`; run `infrastructure/bin/setup` once (or execute
+  `git config core.hooksPath .githooks`) to configure the hook path after
+  cloning.
 - Run `infrastructure/scripts/ci/run-policy-checks.sh` locally before opening
   PRs.
 - Binary artifacts, generated diagrams, build outputs, and environment-specific
