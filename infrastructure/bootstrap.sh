@@ -354,16 +354,16 @@ Place your pytm threat model Python files here.
 
 ```bash
 # Generate all models (as vagrant user)
-sudo -u threatmodel /vagrant/infrastructure/bin/generate
+sudo -u threatmodel /vagrant/bin/generate
 
 # Generate specific model
-sudo -u threatmodel /vagrant/infrastructure/bin/generate /vagrant/api/models/auth_model.py
+sudo -u threatmodel /vagrant/bin/generate /vagrant/api/models/auth_model.py
 
 # List available models
-sudo -u threatmodel /vagrant/infrastructure/bin/generate --list
+sudo -u threatmodel /vagrant/bin/generate --list
 
 # Generate with Plantweb (SVG output)
-sudo -u threatmodel /vagrant/infrastructure/bin/generate --plantweb
+sudo -u threatmodel /vagrant/bin/generate --plantweb
 ```
 
 ## Model Structure
@@ -440,8 +440,8 @@ configure_shell_environment() {
 
     local aliases_content="
 # Threat Modeling Project Aliases (with sudo)
-alias tm-generate='sudo -u $THREAT_MODEL_USER /vagrant/infrastructure/bin/generate'
-alias tm-list='sudo -u $THREAT_MODEL_USER /vagrant/infrastructure/bin/generate --list'
+alias tm-generate='sudo -u $THREAT_MODEL_USER /vagrant/bin/generate'
+alias tm-list='sudo -u $THREAT_MODEL_USER /vagrant/bin/generate --list'
 alias tm-models='cd /vagrant/$PROJECT_NAME/models'
 alias tm-output='cd /vagrant/$PROJECT_NAME/output'
 alias tm-root='cd /vagrant'

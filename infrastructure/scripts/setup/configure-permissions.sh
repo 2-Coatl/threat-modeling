@@ -200,7 +200,7 @@ create_wrapper_scripts() {
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="/vagrant"
 
-exec sudo -u threatmodel "${PROJECT_ROOT}/infrastructure/bin/generate" "$@"
+exec sudo -u threatmodel "${PROJECT_ROOT}/bin/generate" "$@"
 EOF
 
     chmod "$EXEC_PERMISSIONS" "$generate_wrapper"

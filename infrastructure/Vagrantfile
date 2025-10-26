@@ -191,7 +191,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     SSH:        vagrant ssh nginx01
     Resources:  #{NGINX_MEMORY}MB RAM, #{NGINX_CPUS} CPU(s)
 
-    NEXT STEPS: Implement T007-T015B methodology
+    Reverse proxy will forward requests to tomcat01 at http://#{TOMCAT_IP}:8080/
     ========================================
     MESSAGE
   end
@@ -228,7 +228,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     SSH:        vagrant ssh tomcat01
     Resources:  #{TOMCAT_MEMORY}MB RAM, #{TOMCAT_CPUS} CPU(s)
 
-    NEXT STEPS: Implement T007-T015B methodology
+    Access Tomcat + PlantUML: http://#{TOMCAT_IP}:8080/
+    (Use host-only network from the host system)
     ========================================
     MESSAGE
   end
