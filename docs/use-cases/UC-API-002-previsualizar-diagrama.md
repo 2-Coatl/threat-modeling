@@ -1,8 +1,8 @@
-# UC-API-002: PREVISUALIZAR CAMBIOS EN EL EDITOR
+# UC-API-002: PREVISUALIZAR DIAGRAMA SIN HISTORIAL
 
 **Sistema:** Threat Modeling Platform API  
 **Caso de Uso:** UC-API-002  
-**Versión:** 2.0  
+**Versión:** 1.1
 **Fecha:** 2025-10-26
 
 ---
@@ -12,12 +12,12 @@
 |Atributo|Descripción|
 |---|---|
 |**Código**|UC-API-002|
-|**Nombre**|Previsualizar cambios en el editor|
+|**Nombre**|Previsualizar diagrama sin historial|
 |**Prioridad**|🟢 Media|
-|**Actores**|• Autor del modelo desde la UI  
-• Endpoint `/api/diagram/preview`|
-|**Tipo**|Consulta sin persistencia|
-|**Frecuencia de Uso**|Muy alta durante iteraciones|
+|**Actores**|• Servicio de UI (`ui`)
+• Analistas que validan código antes de guardar|
+|**Tipo**|Consulta (render sin persistencia)|
+|**Frecuencia de Uso**|Alta durante edición|
 |**Complejidad**|Baja|
 
 ---
@@ -26,33 +26,35 @@
 
 ### 2.1 Propósito
 
-Entregar una vista previa inmediata del código PlantUML que el autor está ajustando antes de guardar una versión formal. El endpoint utiliza el mismo servicio que el guardado definitivo, pero ejecuta `generate_diagram` con `save_history=False`, evitando commits mientras la persona experimenta con el modelo.【F:api/app.py†L95-L137】【F:api/diagram_service.py†L57-L86】
+Brindar una vista previa rápida del diagrama renderizado sin crear commits ni afectar el historial persistente. El flujo contempla bosquejos escritos en la UI y validaciones previas de código generado desde modelos `pytm` usando la librería Plantweb.
 
 ### 2.2 Objetivo
 
-- Validar sintaxis y estructura visual del diagrama sin modificar el historial.
-- Permitir iteraciones rápidas sobre modelos basados en PlantUML o generados desde pytm.
-- Retornar la imagen codificada en base64 para embebida directa en la UI.
+- Aceptar código PlantUML temporal.
+- Renderizar bytes del diagrama con el formato solicitado.
+- Devolver la imagen codificada en base64 al cliente.
 
 ### 2.3 Alcance
 
 **Incluye:**
 
-- ✅ Validar la presencia de `code` y usar `format` opcional (`svg` por defecto).【F:api/app.py†L107-L135】
-- ✅ Producir bytes determinísticos que la UI transforma en imagen `<img src="data:image/...">`.
-- ✅ Compartir mensajes de error si la sintaxis PlantUML es inválida o el payload supera límites.
+- ✅ Validar campo obligatorio `code`.
+- ✅ Generar imagen placeholder utilizando el motor existente.
+- ✅ Permitir que el cliente conserve la referencia al modelo `pytm` (usando campos locales) sin que el endpoint altere el historial.
+- ✅ Entregar respuesta JSON con datos base64 y formato indicado.
 
 **NO Incluye:**
 
-- ❌ Generar commits ni actualizar `metadata.json`.
-- ❌ Inferir nombre lógico del diagrama (se trabaja con alias `preview`).
-- ❌ Ejecutar análisis pytm; el objetivo es evaluar la representación gráfica.
+- ❌ Guardar historial ni metadatos.
+- ❌ Validar nombre de diagrama.
+- ❌ Aplicar restricciones de versionado.
 
 ### 2.4 Restricciones Especiales
 
-1. `MAX_CONTENT_LENGTH` fija un límite de 16 MB por solicitud.【F:api/app.py†L21-L24】
-2. La UI debe asegurar que las previsualizaciones frecuentes no saturen el servidor.
-3. El endpoint reutiliza la misma infraestructura de render usada posteriormente por UC-API-001 para evitar divergencias.
+1. El tamaño del payload está limitado por `MAX_CONTENT_LENGTH` de Flask (16 MB).
+2. El endpoint responde siempre con base64 (`data:image/...`).
+3. El nombre lógico del diagrama se fuerza a `preview` en el servicio interno.
+4. Cuando el código proviene de `pytm`, la extracción a PlantUML debe realizarse antes de invocar este caso de uso.
 
 ---
 
@@ -61,28 +63,30 @@ Entregar una vista previa inmediata del código PlantUML que el autor está ajus
 ### 3.1 Precondiciones del Sistema
 
 ```
-PRECOND-01: Servicio Flask en ejecución con ruta `/api/diagram/preview` disponible.
-PRECOND-02: Dependencias Python instaladas (Flask, base64, servicio interno).
-PRECOND-03: Configuración opcional de Plantweb si la UI integra modelos pytm.
+PRECOND-01: Endpoint `/api/diagram/preview` habilitado y autenticado según despliegue.
+PRECOND-02: Servicio de render configurado en la API.
+PRECOND-03: Dependencias de Python instaladas (Flask, etc.).
+PRECOND-04: (Cuando aplica) Cliente con acceso a Plantweb y `pytm` para construir el código.
 ```
 
 ### 3.2 Precondiciones del Usuario
 
 ```
-PRECOND-04: Acceso al editor con campo de código PlantUML.
-PRECOND-05: Código válido o en proceso de edición (la respuesta de error guía correcciones).
-PRECOND-06: (Opcional) Formato solicitado compatible con el visor local.
+PRECOND-05: Solicitud JSON con el campo `code` válido.
+PRECOND-06: Opcional `format` (default `svg`).
+PRECOND-07: Usuario con acceso a funcionalidades de edición.
 ```
 
 ### 3.3 Validación de Precondiciones
 
+**Pseudocódigo:**
+
 ```
 FUNCION validar_precondiciones_uc_api_002(request):
-    datos = request.get_json()
-    SI datos ES NULO O 'code' NO EN datos:
+    SI request.json NO existe O 'code' NO EN request.json:
         RETORNAR error('code es obligatorio')
-    SI tamaño(datos['code']) > LIMITE_PERMITIDO:
-        RETORNAR error('El modelo excede el tamaño máximo')
+    SI tamaño_payload > 16MB:
+        RETORNAR error('Payload excede el límite permitido')
     RETORNAR exito()
 FIN FUNCION
 ```
@@ -94,23 +98,31 @@ FIN FUNCION
 ### 4.1 Flujo Paso a Paso
 
 ```
-PASO 1: El autor modifica PlantUML en el editor y selecciona "Vista previa".
-PASO 2: La UI envía POST a /api/diagram/preview con `code` (y `format` si aplica).
-PASO 3: Flask valida entrada y delega al servicio en modo `save_history=False`.
-PASO 4: El servicio devuelve bytes del diagrama, que se codifican en base64.
-PASO 5: La UI renderiza la imagen para revisar estructura antes de guardar.
-PASO 6: Si la vista previa es satisfactoria, el autor procede con UC-API-001.
+PASO 0 (opcional): Cliente obtiene PlantUML desde un modelo `pytm` con Plantweb.
+PASO 1: Cliente POST → /api/diagram/preview.
+PASO 2: API valida presencia de `code`.
+PASO 3: Servicio genera imagen sin guardar historial.
+PASO 4: API codifica la imagen en base64.
+PASO 5: API responde con JSON (`success`, `image`, `format`).
 ```
 
 ### 4.2 Pseudocódigo del Flujo Principal
 
 ```
-FUNCION preview_diagram(code, format='svg'):
-    respuesta = POST('/api/diagram/preview', {code, format})
-    SI respuesta.success:
-        mostrar_imagen(respuesta.image)
-    SINO:
-        mostrar_error(respuesta.error)
+FUNCION previsualizar_diagrama(request):
+    validar_precondiciones_uc_api_002(request)
+    resultado = diagram_service.generate_diagram(
+        diagram_name='preview',
+        code=request.json['code'],
+        format=request.json.get('format', 'svg'),
+        save_history=FALSO
+    )
+    imagen = base64_encode(resultado['image'])
+    RETORNAR respuesta_json({
+        success: VERDADERO,
+        image: 'data:image/' + formato + ';base64,' + imagen,
+        format: formato
+    })
 FIN FUNCION
 ```
 
@@ -118,41 +130,70 @@ FIN FUNCION
 
 ## 5. FLUJOS ALTERNATIVOS
 
-### FA-01: Error de sintaxis PlantUML
+### FA-01: Formato no soportado
 
-- El servicio devuelve HTTP 500 con detalle textual.  
-- La UI resalta el error y sugiere revisar la sección afectada.
+**Descripción:** El cliente envía un formato que la UI no puede mostrar.
 
-### FA-02: Payload vacío
+**Trigger:** `format` desconocido.
 
-- El endpoint responde HTTP 400 inmediatamente.  
-- El editor mantiene el estado anterior hasta que se introduzca código válido.
+**Flujo:**
 
-### FA-03: Formato no soportado
+```
+1. Servicio genera bytes igualmente (no hay validación interna).
+2. UI decide si mostrar o advertir al usuario.
+```
 
-- Si el usuario solicita un formato desconocido, la UI recurre al valor por defecto (`svg`) o informa la incompatibilidad.
+### FA-02: Código PlantUML inválido
+
+**Descripción:** El código no puede ser renderizado por PlantUML real.
+
+**Trigger:** Error posterior al despliegue con motor real.
+
+**Flujo:**
+
+```
+1. PlantUML devolvería error.
+2. API debe capturar excepción y responder HTTP 500.
+```
 
 ---
 
 ## 6. FLUJOS DE EXCEPCIÓN
 
-### FE-01: Servicio inalcanzable
+### FE-01: Payload mal formado
 
-- La llamada AJAX falla (timeout/red).  
-- El editor muestra banner de indisponibilidad y propone reintentar.
+```
+TRIGGER: JSON inválido o sin `code`.
+FLUJO:
+    API retorna HTTP 400.
+    Cliente muestra mensaje de error en editor.
+```
 
-### FE-02: Límite de tamaño superado
+### FE-02: Timeout del servicio
 
-- Flask aborta la petición con HTTP 413; la UI sugiere dividir el modelo o simplificarlo.
+```
+TRIGGER: PlantUML o render tardan demasiado.
+FLUJO:
+    API retorna HTTP 500.
+    UI ofrece reintento o reporte.
+```
 
 ---
 
 ## 7. POSTCONDICIONES
 
+### 7.1 Postcondiciones de Éxito
+
 ```
-POST-01: El autor visualiza inmediatamente el impacto de sus cambios.
-POST-02: No se crean archivos ni entradas en el historial.
-POST-03: Se registran métricas de uso (cuando aplique) para evaluar la experiencia.
+POST-01: Cliente recibe imagen base64 lista para incrustar.
+POST-02: No se crea ningún archivo ni metadata en disco.
+```
+
+### 7.2 Postcondiciones de Fallo
+
+```
+POST-FAIL-01: Cliente recibe descripción del error.
+POST-FAIL-02: No se realizan cambios en el sistema.
 ```
 
 ---
@@ -160,21 +201,57 @@ POST-03: Se registran métricas de uso (cuando aplique) para evaluar la experien
 ## 8. REGLAS DE NEGOCIO
 
 ```
-RN-001: La vista previa debe ejecutarse antes de solicitar análisis pytm para evitar reportes con sintaxis inválida.
-RN-002: Las imágenes retornadas se consideran temporales; la UI no debe almacenarlas en disco.
-RN-003: Los clientes externos deben respetar límites de frecuencia definidos por la plataforma.
+RN-001: El endpoint es sólo para previsualización; está prohibido persistir.
+RN-002: El tamaño máximo del payload está limitado a 16 MB.
+RN-003: Se debe devolver siempre un `success` booleano en la respuesta JSON.
 ```
 
 ---
 
-## 9. MATRIZ DE TRAZABILIDAD
+## 9. TABLA DE BASE DE DATOS
 
-|Elemento|Fuente|Referencia|
-|---|---|---|
-|Endpoint de preview|Implementación Flask|`api/app.py`|
-|Servicio de render|Implementación Python|`api/diagram_service.py`|
-|Interacción de UI|Plantilla de editor|`api/templates/index.html`|
+_No aplica. No se generan registros._
 
 ---
 
-**Fin del Caso de Uso UC-API-002**
+## 10. VALIDACIONES
+
+```
+VAL-01: Validar presencia de `code`.
+VAL-02: Validar límite de tamaño.
+VAL-03: Asegurar respuesta en formato JSON consistente.
+```
+
+---
+
+## 11. EJEMPLOS DE USO
+
+- **Editor UI:** El usuario escribe PlantUML y solicita vista previa inmediata antes de guardar.
+- **Integración externa:** Servicio automatizado prueba un snippet de PlantUML y verifica que el render sea válido.
+
+---
+
+## 12. REQUISITOS NO FUNCIONALES
+
+```
+RNF-01: Respuesta inferior a 500 ms para diagramas simples.
+RNF-02: Endpoint disponible durante sesiones de edición concurrentes.
+```
+
+---
+
+## 13. NOTAS ADICIONALES
+
+- El resultado base64 permite incrustar la imagen sin almacenarla temporalmente.
+- El commit hash devuelto es `None` al no persistir historial.
+
+---
+
+## 14. MATRIZ DE TRAZABILIDAD
+
+|Requisito|Fuente|Sección|
+|---|---|---|
+|Validación de `code` obligatorio|`api/app.py`|`api_preview_diagram`|
+|Render sin historial|`api/app.py`|`save_history=False`|
+|Codificación base64|`api/app.py`|`api_preview_diagram`|
+

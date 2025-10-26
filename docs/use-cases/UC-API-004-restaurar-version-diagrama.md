@@ -2,7 +2,7 @@
 
 **Sistema:** Threat Modeling Platform API  
 **Caso de Uso:** UC-API-004  
-**Versión:** 1.0  
+**Versión:** 1.1
 **Fecha:** 2025-10-26
 
 ---
@@ -26,7 +26,7 @@
 
 ### 2.1 Propósito
 
-Permitir que la API reconstruya la versión actual de un diagrama a partir de un commit histórico, conservando trazabilidad de la restauración.
+Permitir que la API reconstruya la versión actual de un diagrama a partir de un commit histórico, conservando trazabilidad de la restauración y manteniendo la relación con el modelo `pytm` que pudo haber originado la versión rescatada.
 
 ### 2.2 Objetivo
 
@@ -40,6 +40,7 @@ Permitir que la API reconstruya la versión actual de un diagrama a partir de un
 
 - ✅ Recuperar código de la versión seleccionada.
 - ✅ Crear una nueva entrada en metadata con descripción "Rollback to <commit>".
+- ✅ Generar una nueva versión con autor `system` y descripción "Rollback to <commit>", dejando rastro explícito del punto de restauración.
 - ✅ Retornar el hash del nuevo commit generado.
 
 **NO Incluye:**
@@ -53,6 +54,7 @@ Permitir que la API reconstruya la versión actual de un diagrama a partir de un
 1. Se utiliza el author `system` al registrar el rollback.
 2. El formato se hereda de la versión más reciente disponible.
 3. El nuevo commit se agrega al inicio del historial como versión más reciente.
+4. Si la versión restaurada proviene de `pytm`, se requiere documentar manualmente la referencia al modelo en la descripción resultante si se necesita mayor contexto.
 
 ---
 
@@ -96,7 +98,7 @@ FIN FUNCION
 PASO 1: Cliente POST → /api/diagram/rollback.
 PASO 2: API valida parámetros y existencia del commit.
 PASO 3: Servicio lee código de la versión solicitada.
-PASO 4: Servicio crea nuevo commit con descripción "Rollback to <commit>" y autor `system`.
+PASO 4: Servicio crea nuevo commit con descripción "Rollback to <commit>" y autor `system`, dejando constancia de la restauración.
 PASO 5: API responde con `new_commit` y `rolled_back_to`.
 ```
 

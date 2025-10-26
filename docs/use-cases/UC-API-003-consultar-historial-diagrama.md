@@ -2,7 +2,7 @@
 
 **Sistema:** Threat Modeling Platform API  
 **Caso de Uso:** UC-API-003  
-**Versión:** 1.0  
+**Versión:** 1.1
 **Fecha:** 2025-10-26
 
 ---
@@ -26,7 +26,7 @@
 
 ### 2.1 Propósito
 
-Exponer información histórica de cada diagrama para permitir revisiones, auditorías y análisis de cambios.
+Exponer información histórica de cada diagrama para permitir revisiones, auditorías y análisis de cambios, incluyendo la trazabilidad de entregables generados desde modelos `pytm` que alimentan la API.
 
 ### 2.2 Objetivo
 
@@ -40,6 +40,7 @@ Exponer información histórica de cada diagrama para permitir revisiones, audit
 **Incluye:**
 
 - ✅ Entregar metadatos (`author`, `description`, `timestamp`, `diagram_hash`).
+- ✅ Preservar los campos almacenados (`author`, `description`, hashes); la descripción puede detallar el modelo `pytm` de origen.
 - ✅ Calcular diffs usando formato unified diff.
 - ✅ Manejar errores cuando el historial no existe.
 
@@ -54,6 +55,7 @@ Exponer información histórica de cada diagrama para permitir revisiones, audit
 1. Los historiales se leen desde archivos JSON generados por `generate_diagram`.
 2. Los diffs dependen de `difflib.unified_diff` y se entregan como texto plano.
 3. Las rutas retornan HTTP 404 cuando el diagrama o commit no existen.
+4. Cuando un registro proviene de `pytm`, la referencia al archivo o módulo debe quedar documentada en la `description` capturada en la versión.
 
 ---
 
@@ -97,7 +99,7 @@ FIN FUNCION
 
 ```
 PASO 1: Cliente GET → /api/diagram/<name>/history.
-PASO 2: Servicio carga metadata y construye lista de versiones.
+PASO 2: Servicio carga metadata (con `author`, `description`, hashes), donde la descripción puede incluir referencias a modelos `pytm`, y construye lista de versiones.
 PASO 3: API responde con JSON (`versions`, `total`).
 PASO 4: Cliente GET → /api/diagram/<name>/version/<commit> para recuperar código.
 PASO 5: Cliente opcionalmente GET → /api/diagram/<name>/diff?commit1=A&commit2=B para comparar.
