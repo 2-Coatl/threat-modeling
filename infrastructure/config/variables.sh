@@ -36,7 +36,7 @@ readonly INSTALL_SCRIPTS_DIR="${SCRIPTS_DIR}/installation"
 readonly SETUP_SCRIPTS_DIR="${SCRIPTS_DIR}/setup"
 readonly UTILS_DIR="${PROJECT_ROOT}/infrastructure/utils"
 readonly CONFIG_DIR="${PROJECT_ROOT}/config"
-readonly BIN_DIR="${PROJECT_ROOT}/bin"
+readonly BIN_DIR="${PROJECT_ROOT}/infrastructure/bin"
 
 # ============================================================================
 # SYSTEM USER CONFIGURATION

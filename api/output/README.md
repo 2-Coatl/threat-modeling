@@ -7,7 +7,7 @@ This directory contains auto-generated threat model outputs.
 - `reports/` - HTML reports
 
 ## Note
-Do not manually edit files here. They are regenerated each time you run `./bin/generate`.
+Do not manually edit files here. They are regenerated each time you run `./infrastructure/bin/generate`.
 
 ## Viewing
 
