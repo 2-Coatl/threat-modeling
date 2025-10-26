@@ -10,13 +10,13 @@ Place your pytm threat model Python files here.
 
 ```bash
 # Generate all models
-./bin/generate
+./infrastructure/bin/generate
 
 # Generate specific model
-./bin/generate api/models/auth_model.py
+./infrastructure/bin/generate api/models/auth_model.py
 
 # List available models
-./bin/generate --list
+./infrastructure/bin/generate --list
 ```
 
 ## Model Structure
