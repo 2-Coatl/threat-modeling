@@ -1,8 +1,8 @@
-# UC-API-004: GESTIONAR CORRECCIONES CON HISTORIAL Y ROLLBACK
+# UC-API-008: GESTIONAR CORRECCIONES CON HISTORIAL Y ROLLBACK
 
-**Sistema:** Threat Modeling Platform API  
-**Caso de Uso:** UC-API-004  
-**Versión:** 1.0  
+**Sistema:** Threat Modeling Platform API
+**Caso de Uso:** UC-API-008
+**Versión:** 1.0
 **Fecha:** 2025-10-26
 
 ---
@@ -11,7 +11,7 @@
 
 |Atributo|Descripción|
 |---|---|
-|**Código**|UC-API-004|
+|**Código**|UC-API-008|
 |**Nombre**|Gestionar correcciones con historial y rollback|
 |**Prioridad**|🔴 Alta|
 |**Actores**|• Autor del modelo  
@@ -183,4 +183,4 @@ RN-003: No se eliminan commits; las rectificaciones se registran como nuevas ver
 
 ---
 
-**Fin del Caso de Uso UC-API-004**
+**Fin del Caso de Uso UC-API-008**
