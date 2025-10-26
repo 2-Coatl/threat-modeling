@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # infrastructure/bin/generate - Auto-discover and generate threat models
 # Runs as threatmodel user via sudo
-# Primary implementation lives under infrastructure; bin/generate wraps this file.
+# Primary implementation lives entirely under infrastructure.
 
 set -euo pipefail
 
@@ -172,13 +172,13 @@ check_dependencies() {
     if [[ ${#missing[@]} -gt 0 ]]; then
         log_error "Missing required commands:"
         printf '  - %s\n' "${missing[@]}" >&2
-        log_error "Run: sudo /vagrant/bin/setup"
+        log_error "Run: sudo /vagrant/infrastructure/bin/setup"
         return 1
     fi
 
     if ! python3 -c "import pytm" 2>/dev/null; then
         log_error "pytm not available"
-        log_error "Run: sudo /vagrant/bin/setup"
+        log_error "Run: sudo /vagrant/infrastructure/bin/setup"
         return 1
     fi
 
@@ -608,7 +608,7 @@ process_all_models() {
 show_usage() {
     cat << 'EOF'
 Usage: tm-generate [OPTIONS] [MODEL_FILE]
-   or: sudo -u threatmodel /vagrant/bin/generate [OPTIONS] [MODEL_FILE]
+   or: sudo -u threatmodel /vagrant/infrastructure/bin/generate [OPTIONS] [MODEL_FILE]
 
 Generate threat model diagrams and reports.
 
