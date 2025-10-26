@@ -109,7 +109,86 @@ refresh_package_index() {
 }
 
 # =============================================================================
-# STEP 2: INSTALL PODMAN RUNTIME
+# STEP 2: ENSURE PODMAN REPOSITORY
+# =============================================================================
+
+ensure_podman_repository() {
+    local step="$1"
+    local total="$2"
+
+    log_step "$step" "$total" "Ensuring ${OCI_RUNTIME_BIN} repository availability"
+
+    if apt-cache show "${OCI_RUNTIME_BIN}" >/dev/null 2>&1; then
+        log_info "${OCI_RUNTIME_BIN} package available from existing repositories"
+        log_success "Repository already configured"
+        return 0
+    fi
+
+    if [[ ! -r /etc/os-release ]]; then
+        log_warning "Cannot detect operating system release; skipping custom repository configuration"
+        return 0
+    fi
+
+    # shellcheck disable=SC1091
+    source /etc/os-release
+
+    if [[ "${ID}" != "ubuntu" ]]; then
+        log_warning "Unsupported distribution '${ID}' for upstream Podman repository"
+        return 0
+    fi
+
+    local repo_suffix="xUbuntu_${VERSION_ID}"
+    local repo_url="https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/${repo_suffix}/"
+    local keyring_dir="/etc/apt/keyrings"
+    local keyring_file="${keyring_dir}/libcontainers-archive-keyring.gpg"
+    local list_file="/etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list"
+
+    mkdir -p -m 0755 "${keyring_dir}"
+
+    if [[ ! -f "${keyring_file}" ]]; then
+        log_info "Downloading Podman repository signing key"
+
+        if command -v curl >/dev/null 2>&1; then
+            if ! curl -fsSL "${repo_url}Release.key" | gpg --dearmor -o "${keyring_file}"; then
+                log_error "Failed to install Podman repository signing key"
+                return 1
+            fi
+        elif command -v wget >/dev/null 2>&1; then
+            if ! wget -qO- "${repo_url}Release.key" | gpg --dearmor -o "${keyring_file}"; then
+                log_error "Failed to install Podman repository signing key"
+                return 1
+            fi
+        else
+            log_error "Neither curl nor wget is available to download repository key"
+            return 1
+        fi
+    fi
+
+    echo "deb [signed-by=${keyring_file}] ${repo_url} /" > "${list_file}"
+
+    log_info "Added Podman repository: ${repo_url}"
+
+    local output
+    output=$(apt-get update 2>&1)
+    local exit_code=$?
+
+    if [[ $exit_code -ne 0 ]]; then
+        log_error "apt-get update failed after adding Podman repository"
+        echo "$output" | grep -v "^debconf:" >&2
+        return 1
+    fi
+
+    if apt-cache show "${OCI_RUNTIME_BIN}" >/dev/null 2>&1; then
+        log_success "Podman repository configured"
+    else
+        log_warning "Podman package still unavailable after configuring repository"
+    fi
+
+    return 0
+}
+
+# =============================================================================
+# STEP 3: INSTALL PODMAN RUNTIME
 # =============================================================================
 
 install_podman_runtime() {
@@ -148,7 +227,7 @@ install_podman_runtime() {
 }
 
 # =============================================================================
-# STEP 3: CONFIGURE DEFAULT STORAGE
+# STEP 4: CONFIGURE DEFAULT STORAGE
 # =============================================================================
 
 configure_storage_defaults() {
@@ -229,7 +308,7 @@ EOF
 }
 
 # =============================================================================
-# STEP 4: VERIFY INSTALLATION
+# STEP 5: VERIFY INSTALLATION
 # =============================================================================
 
 final_verification() {
@@ -261,12 +340,13 @@ main() {
         return 0
     fi
 
-    local total_steps=4
+    local total_steps=5
 
     refresh_package_index 1 "$total_steps" || return 1
-    install_podman_runtime 2 "$total_steps" || return 1
-    configure_storage_defaults 3 "$total_steps" || return 1
-    final_verification 4 "$total_steps" || return 1
+    ensure_podman_repository 2 "$total_steps" || return 1
+    install_podman_runtime 3 "$total_steps" || return 1
+    configure_storage_defaults 4 "$total_steps" || return 1
+    final_verification 5 "$total_steps" || return 1
 
     return 0
 }
