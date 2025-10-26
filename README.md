@@ -89,7 +89,7 @@ Esto asegura:
                           ▼
 ┌────────────────────────────────────────────────────────┐
 │           Generación de Modelos de Amenazas           │
-│    Usuario: threatmodel    Tool: infrastructure/bin/generate         │
+│    Usuario: threatmodel    Tool: bin/generate         │
 │    ├─ pytm (DFD via Graphviz)                         │
 │    ├─ PlantUML Server (Sequence via HTTP)             │
 │    └─ Pandoc (Reportes HTML)                          │
@@ -255,7 +255,7 @@ tm-root      # Va a raíz del proyecto
 tm-generate api/models/auth_model.py
 
 # O usando sudo directamente
-sudo -u threatmodel /vagrant/infrastructure/bin/generate api/models/auth_model.py
+sudo -u threatmodel /vagrant/bin/generate api/models/auth_model.py
 ```
 
 ### Ver Resultados
@@ -524,8 +524,8 @@ Después de conectarte con `make vm-ssh` (o `vagrant ssh` desde `infrastructure/
 
 | Alias | Descripción | Equivalente |
 |-------|-------------|-------------|
-| `tm-generate` | Genera todos los modelos | `sudo -u threatmodel /vagrant/infrastructure/bin/generate` |
-| `tm-list` | Lista modelos disponibles | `sudo -u threatmodel /vagrant/infrastructure/bin/generate --list` |
+| `tm-generate` | Genera todos los modelos | `sudo -u threatmodel /vagrant/bin/generate` |
+| `tm-list` | Lista modelos disponibles | `sudo -u threatmodel /vagrant/bin/generate --list` |
 | `tm-models` | Va a directorio de modelos | `cd /vagrant/api/models` |
 | `tm-output` | Va a directorio de outputs | `cd /vagrant/api/output` |
 | `tm-root` | Va a raíz del proyecto | `cd /vagrant` |
@@ -610,13 +610,13 @@ curl http://localhost:8080/plantuml/
 
 ```bash
 # Verificar dependencias
-/vagrant/infrastructure/bin/generate --help
+/vagrant/bin/generate --help
 
 # Ver logs de generación
 sudo tail -f /var/log/api/threatmodel.log
 
 # Ejecutar como usuario correcto
-sudo -u threatmodel /vagrant/infrastructure/bin/generate
+sudo -u threatmodel /vagrant/bin/generate
 
 # Verificar permisos
 ls -la /vagrant/api/output/
@@ -751,7 +751,7 @@ Archivo: `/etc/sudoers.d/threatmodel`
 
 ```bash
 # Usuario vagrant puede ejecutar como threatmodel sin password
-vagrant ALL=(threatmodel) NOPASSWD: /vagrant/infrastructure/bin/generate
+vagrant ALL=(threatmodel) NOPASSWD: /vagrant/bin/generate
 vagrant ALL=(threatmodel) NOPASSWD: /usr/bin/python3
 
 # Deshabilitar requiretty para threatmodel
@@ -795,6 +795,9 @@ Todos los scripts siguen estos principios:
 - **Idempotente**: Seguro ejecutar múltiples veces
 - **Sin Fallas Silenciosas**: Manejo explícito de errores
 - **Principios SOLID**: Responsabilidad única por script
+
+> Si modificas automatizaciones bajo `.github/`, revisa
+> `.github/AGENTS.md` para las convenciones específicas de esos archivos.
 
 Revisa el documento [Threat Modeling Engineering Ruleset](docs/standards/engineering-ruleset.md)
 para lineamientos completos sobre Bash, Python (Flask + PyTM), React, SCSS y
@@ -880,7 +883,7 @@ sudo /vagrant/infrastructure/bootstrap.sh
 
 **Cambiado**:
 - Diagramas de secuencia ahora usan servicio web PlantUML
-- infrastructure/bin/generate usa API HTTP para PlantUML
+- bin/generate usa API HTTP para PlantUML
 - Proceso bootstrap incluye setup de Tomcat (8 fases)
 
 **Mejorado**:
@@ -894,7 +897,7 @@ sudo /vagrant/infrastructure/bootstrap.sh
 
 **Correcciones Críticas**:
 - Corregido problema con expresiones aritméticas en bash
-- Actualizado script infrastructure/bin/generate para POSIX compliance
+- Actualizado script bin/generate para POSIX compliance
 - Template de reportes simplificado
 - Eliminadas variables no soportadas del template
 
