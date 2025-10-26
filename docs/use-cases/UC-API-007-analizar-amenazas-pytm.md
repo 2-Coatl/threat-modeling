@@ -1,8 +1,8 @@
-# UC-API-003: ANALIZAR AMENAZAS CON PYTM Y GENERAR REPORTE
+# UC-API-007: ANALIZAR AMENAZAS CON PYTM Y GENERAR REPORTE
 
-**Sistema:** Threat Modeling Platform API  
-**Caso de Uso:** UC-API-003  
-**Versión:** 1.0  
+**Sistema:** Threat Modeling Platform API
+**Caso de Uso:** UC-API-007
+**Versión:** 1.0
 **Fecha:** 2025-10-26
 
 ---
@@ -11,7 +11,7 @@
 
 |Atributo|Descripción|
 |---|---|
-|**Código**|UC-API-003|
+|**Código**|UC-API-007|
 |**Nombre**|Analizar amenazas con pytm y generar reporte|
 |**Prioridad**|🟡 Alta|
 |**Actores**|• Autor del modelo desde la UI  
@@ -47,7 +47,7 @@ Validar un modelo PlantUML contra la lógica de seguridad definida en pytm, gene
 
 **NO Incluye:**
 
-- ❌ Autocorrección de hallazgos; el autor debe iterar manualmente en PlantUML (cubierto por UC-API-004).
+- ❌ Autocorrección de hallazgos; el autor debe iterar manualmente en PlantUML (cubierto por UC-API-008).
 - ❌ Gestión de credenciales o permisos del motor pytm (preconfigurados por infraestructura).
 - ❌ Ejecución de pipelines CI/CD (documentado fuera de este caso de uso).
 
@@ -191,4 +191,4 @@ RN-004: Solo personal autorizado puede ejecutar análisis que generen reportes o
 
 ---
 
-**Fin del Caso de Uso UC-API-003**
+**Fin del Caso de Uso UC-API-007**

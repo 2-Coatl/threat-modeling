@@ -1,8 +1,8 @@
-# UC-API-005: PRESENTAR HALLAZGOS Y ARTEFACTOS DEL ANÁLISIS
+# UC-API-009: PRESENTAR HALLAZGOS Y ARTEFACTOS DEL ANÁLISIS
 
-**Sistema:** Threat Modeling Platform API  
-**Caso de Uso:** UC-API-005  
-**Versión:** 1.0  
+**Sistema:** Threat Modeling Platform API
+**Caso de Uso:** UC-API-009
+**Versión:** 1.0
 **Fecha:** 2025-10-26
 
 ---
@@ -11,7 +11,7 @@
 
 |Atributo|Descripción|
 |---|---|
-|**Código**|UC-API-005|
+|**Código**|UC-API-009|
 |**Nombre**|Presentar hallazgos y artefactos del análisis|
 |**Prioridad**|🟡 Alta|
 |**Actores**|• Autor del modelo  
@@ -27,7 +27,7 @@
 
 ### 2.1 Propósito
 
-Exponer de manera clara los resultados del análisis pytm al equipo, incluyendo reportes HTML, diagramas derivados y metadatos de versiones para facilitar la toma de decisiones. Este caso de uso completa el ciclo iniciado en UC-API-001/003 y alimenta la iteración documentada en UC-API-004.【F:api/output/README.md†L1-L23】【F:api/templates/diagrams.html†L1-L120】
+Exponer de manera clara los resultados del análisis pytm al equipo, incluyendo reportes HTML, diagramas derivados y metadatos de versiones para facilitar la toma de decisiones. Este caso de uso completa el ciclo iniciado en UC-API-001/003 y alimenta la iteración documentada en UC-API-008.【F:api/output/README.md†L1-L23】【F:api/templates/diagrams.html†L1-L120】
 
 ### 2.2 Objetivo
 
@@ -54,7 +54,7 @@ Exponer de manera clara los resultados del análisis pytm al equipo, incluyendo 
 
 1. Los reportes se sirven desde `/outputs/reports/` y deben mantenerse sincronizados con las versiones generadas por UC-API-003.【F:api/output/README.md†L3-L22】
 2. Las vistas HTML emplean estilos estáticos; cualquier cambio visual debe preserva la legibilidad de hallazgos críticos.【F:api/templates/diagrams.html†L1-L120】
-3. El catálogo de diagramas debe reflejar la información de `metadata.json`; inconsistencias indican errores en UC-API-001/004.
+  3. El catálogo de diagramas debe reflejar la información de `metadata.json`; inconsistencias indican errores en UC-API-001/008.
 
 ---
 
@@ -79,7 +79,7 @@ PRECOND-06: Conocimiento del diagrama o reporte que desea inspeccionar.
 ### 3.3 Validación de Precondiciones
 
 ```
-FUNCION validar_precondiciones_uc_api_005(diagrama):
+FUNCION validar_precondiciones_uc_api_009(diagrama):
     SI not existe_reporte(diagrama):
         RETORNAR error('No hay reportes generados')
     SI not existe_historial(diagrama):
@@ -99,7 +99,7 @@ PASO 1: Tras completar UC-API-003, la UI recarga la vista de diagramas.
 PASO 2: Se muestran tarjetas con última versión, autor y resumen de hallazgos.
 PASO 3: El usuario abre el detalle del diagrama y revisa enlaces a reportes HTML y diagramas SVG.
 PASO 4: El equipo comparte la URL pública `/outputs/reports/<nombre>_report.html` con stakeholders externos.
-PASO 5: Si se requieren cambios, se inicia UC-API-004 para registrar correcciones.
+PASO 5: Si se requieren cambios, se inicia UC-API-008 para registrar correcciones.
 ```
 
 ### 4.2 Pseudocódigo del Flujo Principal
@@ -177,4 +177,4 @@ RN-003: Cualquier modificación visual en la UI debe preservar la visibilidad de
 
 ---
 
-**Fin del Caso de Uso UC-API-005**
+**Fin del Caso de Uso UC-API-009**
