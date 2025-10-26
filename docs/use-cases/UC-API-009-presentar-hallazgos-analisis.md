@@ -84,3 +84,11 @@
 - El resumen debe resaltar hallazgos críticos y su impacto estimado.
 - Los reportes descargables deben conservar la versión y fecha del análisis para trazabilidad.
 
+---
+
+## 9. REFERENCIAS Y TRAZABILIDAD
+
+- **Casos de uso relacionados:** UC-UI-003, UC-API-007.
+- **Artefactos complementarios:** No aplica (tableros de visualización se documentarán como anexos UI).
+- **Notas adicionales:** Sirve como punto de partida para las correcciones registradas en UC-API-008.
+

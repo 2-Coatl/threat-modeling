@@ -83,3 +83,11 @@
 - La respuesta debe expirar automáticamente; no puede reutilizarse como versión oficial.
 - Los mensajes deben ser comprensibles para perfiles no técnicos.
 
+---
+
+## 9. REFERENCIAS Y TRAZABILIDAD
+
+- **Casos de uso relacionados:** UC-UI-001.
+- **Artefactos complementarios:** No aplica (mockups de previsualización pendientes de adjuntar).
+- **Notas adicionales:** Sus resultados alimentan los flujos de guardado (UC-API-001) y corrección (UC-API-008).
+

@@ -85,3 +85,11 @@
 - Toda consulta debe quedar registrada para fines de auditoría.
 - Los datos exportados deben incluir sellos de tiempo y usuario responsable.
 
+---
+
+## 9. REFERENCIAS Y TRAZABILIDAD
+
+- **Casos de uso relacionados:** No aplica (caso de uso histórico fuera del alcance actual).
+- **Artefactos complementarios:** No aplica (la documentación original reside en los archivos de IACT).
+- **Notas adicionales:** Se conserva solo para fines de auditoría y puede eliminarse del inventario activo sin impacto.
+

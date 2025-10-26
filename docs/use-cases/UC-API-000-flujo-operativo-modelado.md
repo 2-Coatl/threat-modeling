@@ -88,3 +88,11 @@
 - Los registros de auditoría deben conservar quién ejecutó cada acción y cuándo se realizaron.
 - La plataforma debe exponer el estado del análisis (en progreso, completo, fallido) sin requerir acceso a consola técnica.
 
+---
+
+## 9. REFERENCIAS Y TRAZABILIDAD
+
+- **Casos de uso relacionados:** UC-UI-001.
+- **Artefactos complementarios:** No aplica (diagramas se documentarán por separado).
+- **Notas adicionales:** Mantiene alineación con el flujo integral descrito en el catálogo de UI.
+

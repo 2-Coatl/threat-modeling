@@ -87,3 +87,11 @@
 - Cada versión debe incluir referencias únicas que permitan ejecutar rollback u otras acciones posteriores.
 - La comparación debe enfocarse en diferencias visibles para el actor, evitando detalles internos de almacenamiento.
 
+---
+
+## 9. REFERENCIAS Y TRAZABILIDAD
+
+- **Casos de uso relacionados:** UC-UI-001.
+- **Artefactos complementarios:** No aplica (diagramas de historial pendientes de documentar).
+- **Notas adicionales:** Complementa los flujos de versionado (UC-API-001) y restauración (UC-API-004).
+

@@ -86,3 +86,11 @@
 - La respuesta debe incluir referencias que permitan iniciar consultas o diffs posteriores.
 - Los mensajes de error tienen que indicar el motivo y sugerir acciones para corregirlo.
 
+---
+
+## 9. REFERENCIAS Y TRAZABILIDAD
+
+- **Casos de uso relacionados:** UC-UI-001.
+- **Artefactos complementarios:** No aplica (diagramas se documentarán por separado).
+- **Notas adicionales:** Comparte trazabilidad con las operaciones de historial descritas en UC-API-003 y UC-API-004.
+

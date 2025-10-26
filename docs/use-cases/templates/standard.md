@@ -1,5 +1,9 @@
 # UC-XXX: <TÍTULO DEL CASO DE USO>
 
+> ⚠️ Los casos de uso se documentan como narrativas textuales. Los diagramas UML
+> y otros artefactos visuales deben mantenerse aparte y referenciarse desde la
+> sección de trazabilidad.
+
 **Sistema:** <Nombre del sistema>
 **Caso de Uso:** UC-XXX
 **Versión:** <versión>
@@ -88,3 +92,13 @@ interacción desde la perspectiva del actor.
 - <Regla de negocio relevante>
 
 Si no existen, indicar "No aplica".
+
+---
+
+## 9. REFERENCIAS Y TRAZABILIDAD
+
+Añade la información que vincula este caso de uso con otros artefactos.
+
+- **Casos de uso relacionados:** <UC-XXX-... o "No aplica">.
+- **Artefactos complementarios:** <Diagramas, mockups, etc., con enlace relativo o "No aplica">.
+- **Notas adicionales:** <Observaciones de trazabilidad o estado>.

@@ -84,3 +84,11 @@
 - Los mensajes al actor deben diferenciar entre hallazgos críticos, altos, medios y bajos.
 - El sistema debe mantener un registro de la fecha de ejecución y del responsable que inició el análisis.
 
+---
+
+## 9. REFERENCIAS Y TRAZABILIDAD
+
+- **Casos de uso relacionados:** UC-UI-002, UC-API-005, UC-API-006.
+- **Artefactos complementarios:** No aplica (reportes de ejemplo se anexarán en la documentación de resultados).
+- **Notas adicionales:** Los hallazgos generados se presentan al usuario final mediante UC-API-009.
+

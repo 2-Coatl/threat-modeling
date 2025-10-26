@@ -86,3 +86,11 @@
 - El editor debe preservar borradores locales para prevenir pérdida de trabajo.
 - Las notificaciones deben indicar claramente qué caso de uso API soportó cada acción para facilitar la trazabilidad.
 
+---
+
+## 9. REFERENCIAS Y TRAZABILIDAD
+
+- **Casos de uso relacionados:** UC-API-000, UC-API-001, UC-API-002, UC-API-003, UC-API-004, UC-API-008.
+- **Artefactos complementarios:** No aplica (prototipos de UI se documentarán en la guía de diseño).
+- **Notas adicionales:** Constituye el punto central del mapeo UI↔API descrito en `docs/use-cases/README.md`.
+

@@ -40,7 +40,9 @@ diseño técnico ni en detalles de implementación.
    del flujo principal.
 5. **Registra cursos alternos.** Para cada condición detectable, especifica cómo
    cambia la interacción desde la perspectiva del actor.
-6. **Versiona los documentos.** Actualiza la sección de metadatos con la fecha y
+6. **Documenta referencias y trazabilidad.** Completa la sección 9 para enlazar
+   casos de uso relacionados, diagramas o artefactos complementarios.
+7. **Versiona los documentos.** Actualiza la sección de metadatos con la fecha y
    versión cuando cambien reglas o comportamientos.
 
 ## Inventario vigente

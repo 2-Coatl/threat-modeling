@@ -84,3 +84,11 @@
 - Debe mantenerse consistencia entre los formatos generados (mismo contenido, distintos formatos).
 - Las notificaciones al actor deben incluir fecha y hora de generación para control de versiones.
 
+---
+
+## 9. REFERENCIAS Y TRAZABILIDAD
+
+- **Casos de uso relacionados:** UC-UI-002, UC-API-005.
+- **Artefactos complementarios:** No aplica (repositorio de ejemplos en preparación).
+- **Notas adicionales:** Los artefactos generados se consumen en la visualización de resultados (UC-API-009).
+

@@ -84,3 +84,11 @@
 - Las correcciones deben conservar la fecha y hora de cada actualización de estado.
 - El sistema debe permitir filtrar correcciones por estado para facilitar su seguimiento.
 
+---
+
+## 9. REFERENCIAS Y TRAZABILIDAD
+
+- **Casos de uso relacionados:** UC-UI-001, UC-API-001, UC-API-004.
+- **Artefactos complementarios:** No aplica (tableros de seguimiento se documentarán aparte).
+- **Notas adicionales:** Provee el enlace entre historial de versiones y acciones correctivas del ciclo de modelado.
+

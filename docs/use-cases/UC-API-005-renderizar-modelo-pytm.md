@@ -84,3 +84,11 @@
 - Las salidas deben identificarse con la versión del modelo para evitar confusiones.
 - Se debe informar el tiempo estimado de generación cuando exceda unos segundos.
 
+---
+
+## 9. REFERENCIAS Y TRAZABILIDAD
+
+- **Casos de uso relacionados:** UC-UI-002, UC-API-007.
+- **Artefactos complementarios:** No aplica (diagramas auxiliares se compartirán en anexos dedicados).
+- **Notas adicionales:** Los artefactos producidos sirven de insumo para la revisión en UC-API-009.
+

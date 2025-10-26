@@ -85,3 +85,11 @@
 - La UI debe resaltar hallazgos críticos por defecto.
 - Las exportaciones deben incluir fecha y autor de la operación para trazabilidad.
 
+---
+
+## 9. REFERENCIAS Y TRAZABILIDAD
+
+- **Casos de uso relacionados:** UC-API-009, UC-API-007, UC-API-008.
+- **Artefactos complementarios:** No aplica (diseños de reportes compartidos vivirán en la guía de UI).
+- **Notas adicionales:** Se integra con el flujo de compartición descrito en el mapeo UI↔API del README del catálogo.
+

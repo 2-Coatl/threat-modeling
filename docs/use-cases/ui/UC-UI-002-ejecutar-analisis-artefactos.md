@@ -85,3 +85,11 @@
 - La UI debe notificar por canal visible (banner o panel) cuando el análisis finaliza.
 - Debe registrarse qué usuario inició el análisis para trazabilidad.
 
+---
+
+## 9. REFERENCIAS Y TRAZABILIDAD
+
+- **Casos de uso relacionados:** UC-API-005, UC-API-006, UC-API-007.
+- **Artefactos complementarios:** No aplica (wireframes de estado del análisis se agregarán en la guía de UI).
+- **Notas adicionales:** Sus resultados se consumen posteriormente en UC-UI-003 y UC-API-009.
+

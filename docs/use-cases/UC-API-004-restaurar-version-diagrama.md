@@ -84,3 +84,11 @@
 - Las restauraciones deben quedar claramente identificadas para auditoría futura.
 - Los mensajes al actor deben explicar el impacto de la restauración en versiones posteriores.
 
+---
+
+## 9. REFERENCIAS Y TRAZABILIDAD
+
+- **Casos de uso relacionados:** UC-UI-001, UC-API-003.
+- **Artefactos complementarios:** No aplica (diagramas de rollback pendientes de adjuntar).
+- **Notas adicionales:** Proporciona el mecanismo de recuperación utilizado en UC-API-008.
+
