@@ -8,28 +8,38 @@ plantilla estándar.
 
 ## Inventario actual
 
-| Código API | Nombre                                         | Versión | Última actualización | Descripción breve                                               | Estado  |
-|------------|------------------------------------------------|---------|----------------------|-----------------------------------------------------------------|---------|
-| UC-API-000 | Operar el flujo de modelado con PlantUML y pytm | 1.1     | 2025-10-27           | El ORQUESTADOR coordina diagramas, análisis y sincronización    | Vigente |
-| UC-API-001 | Generar diagramas versionados                   | 1.1     | 2025-10-27           | El AUTOR FUNCIONAL solicita nuevas versiones persistentes       | Vigente |
-| UC-API-002 | Previsualizar diagrama sin historial            | 1.1     | 2025-10-27           | El AUTOR FUNCIONAL consulta un render temporal                  | Vigente |
-| UC-API-003 | Consultar historial y versiones de diagramas    | 1.1     | 2025-10-27           | El AUTOR FUNCIONAL revisa cambios y recupera metadatos          | Vigente |
-| UC-API-004 | Restaurar una versión previa del diagrama       | 1.1     | 2025-10-27           | El AUTOR FUNCIONAL restaura diagramas previos mediante la API   | Vigente |
-| UC-API-005 | Renderizar modelos pytm con Plantweb            | 1.1     | 2025-10-27           | El ORQUESTADOR invoca la renderización de componentes pytm      | Vigente |
-| UC-API-006 | Generar artefactos con PlantUML                 | 1.1     | 2025-10-27           | El ORQUESTADOR produce archivos UML descargables                | Vigente |
-| UC-API-007 | Analizar amenazas con pytm y generar reporte    | 1.1     | 2025-10-27           | El ORQUESTADOR corre pytm y agrega resultados                   | Vigente |
-| UC-API-008 | Gestionar correcciones con historial y rollback | 1.1     | 2025-10-27           | El AUTOR FUNCIONAL coordina cambios y seguimiento               | Vigente |
-| UC-API-009 | Presentar hallazgos y artefactos del análisis   | 1.1     | 2025-10-27           | El ORQUESTADOR publica resultados para consulta                 | Vigente |
+| Código API | Nombre                               | Versión | Última actualización | Descripción breve                                                          | Estado  |
+|------------|--------------------------------------|---------|----------------------|----------------------------------------------------------------------------|---------|
+| UC-API-000 | Gestionar autenticación y tokens     | 1.0     | 2025-10-28           | El SERVICIO DE UI registra usuarios, autentica credenciales y valida JWT   | Vigente |
+| UC-API-001 | Registrar modelos visuales           | 1.0     | 2025-10-28           | El SERVICIO DE UI crea modelos con visualización y código sincronizado     | Vigente |
+| UC-API-002 | Listar modelos disponibles           | 1.0     | 2025-10-28           | El SERVICIO DE UI consulta modelos con filtros, permisos y paginación      | Vigente |
+| UC-API-003 | Consultar detalles de modelo         | 1.0     | 2025-10-28           | El SERVICIO DE UI recupera representación completa para edición o revisión | Vigente |
+| UC-API-004 | Actualizar modelos visuales          | 1.0     | 2025-10-28           | El SERVICIO DE UI sincroniza cambios visuales y commits en Git             | Vigente |
+| UC-API-005 | Eliminar modelos                     | 1.0     | 2025-10-28           | El SERVICIO DE UI borra modelos y artefactos asociados de forma consistente | Vigente |
+| UC-API-006 | Generar diagramas automáticos        | 1.0     | 2025-10-28           | El ORQUESTADOR DE MODELOS produce DFD y secuencias con cache inteligente   | Vigente |
+| UC-API-007 | Ejecutar análisis de amenazas        | 1.0     | 2025-10-28           | El ORQUESTADOR DE MODELOS corre pytm y persiste hallazgos clasificados     | Vigente |
+| UC-API-008 | Gestionar historial y versiones      | 1.0     | 2025-10-28           | El ORQUESTADOR DE MODELOS consulta, compara, restaura y ramifica commits   | Vigente |
+| UC-API-009 | Facilitar colaboración y exportaciones | 1.0   | 2025-10-28           | El ORQUESTADOR DE MODELOS administra comentarios, compartidos y exportes   | Vigente |
+| UC-API-010 | Validar código pytm                     | 1.0     | 2025-10-29           | El SERVICIO DE UI verifica sintaxis del script antes de guardar o exportar | Vigente |
+| UC-API-011 | Actualizar estado de hallazgos          | 1.0     | 2025-10-29           | El ORQUESTADOR DE MODELOS marca amenazas como mitigadas, aceptadas o FP    | Vigente |
+| UC-API-012 | Filtrar hallazgos registrados           | 1.0     | 2025-10-29           | El ORQUESTADOR DE MODELOS consulta hallazgos aplicando criterios dinámicos | Vigente |
+| UC-API-013 | Consultar actividad del modelo          | 1.0     | 2025-10-29           | El ORQUESTADOR DE MODELOS recupera el feed auditado para la UI             | Vigente |
+| UC-API-014 | Descargar diagramas generados           | 1.0     | 2025-10-29           | El ORQUESTADOR DE MODELOS entrega artefactos gráficos listos para descarga | Vigente |
+| UC-API-015 | Importar modelos desde JSON             | 1.0     | 2025-10-29           | El SERVICIO DE UI carga un archivo y crea un modelo completo en la plataforma | Vigente |
 
 ## Próximas tareas de documentación
 
-| ID       | Tarea                                                                                                                   | Responsable sugerido  | Prioridad | Vínculo                        |
-|----------|-------------------------------------------------------------------------------------------------------------------------|-----------------------|-----------|-------------------------------|
-| TD-API-01 | Incorporar referencias a endpoints concretos en cada sección 9 para reforzar la trazabilidad con la especificación técnica. | Equipo de arquitectura | Alta      | `docs/api` (pendiente de creación) |
-| TD-API-02 | Actualizar las fechas y versiones a la 1.2 cuando se libere la automatización de Plantweb.                             | PO plataforma         | Media     | UC-API-005, UC-API-006        |
-| TD-API-03 | Documentar escenarios de error extendidos para los flujos de rollback descritos en UC-API-008.                         | Equipo de QA          | Media     | UC-API-008                    |
-| TD-API-04 | Agregar mockups o diagramas de secuencia como artefactos complementarios referenciados desde UC-API-009.               | UX y documentación    | Baja      | UC-API-009                    |
-
+| ID        | Tarea                                                                                                   | Responsable sugerido      | Prioridad | Vínculo                     |
+|-----------|---------------------------------------------------------------------------------------------------------|---------------------------|-----------|-----------------------------|
+| TD-API-01 | Verificar que cada caso de uso actualice su sección 9 con enlaces a endpoints reales tras publicar la especificación. | Equipo de arquitectura   | Alta      | Todos los UC-API vigentes   |
+| TD-API-02 | Definir lineamientos de retención y backups antes de habilitar eliminaciones masivas.                   | Operaciones               | Media     | UC-API-005                  |
+| TD-API-03 | Documentar políticas de caché y métricas de rendimiento para la generación de diagramas.               | Equipo de plataforma      | Media     | UC-API-006                  |
+| TD-API-04 | Incorporar guías de exportación filtrada y formatos soportados en el manual de usuarios.               | Producto y documentación  | Media     | UC-API-009                  |
+| TD-API-05 | Sincronizar ejemplos de validación de código con los linters corporativos.                            | Equipo de plataforma      | Media     | UC-API-010                  |
+| TD-API-06 | Documentar matriz de transición de estados para hallazgos y reglas de negocio asociadas.              | Seguridad                 | Alta      | UC-API-011, UC-API-012      |
+| TD-API-07 | Definir retención del feed de actividad y políticas de anonimización antes de exponerlo externamente. | Operaciones               | Media     | UC-API-013                  |
+| TD-API-08 | Incorporar ejemplos de descargas firmadas y controladas en la guía de integraciones.                  | Producto y documentación  | Media     | UC-API-014                  |
+| TD-API-09 | Establecer checklist de validación para archivos importados y actualizar la guía paso a paso.         | Producto                  | Alta      | UC-API-015                  |
 
 Cada documento sigue `templates/standard.md`, define actores en mayúsculas y
 mantiene trazabilidad hacia referencias técnicas desde la sección 9. Las tareas

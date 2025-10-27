@@ -1,9 +1,9 @@
-# UC-API-000: Operar flujo de modelado
+# UC-API-000: Gestionar autenticación y tokens
 
 **Sistema:** Threat Modeling Platform API
 **Caso de Uso:** UC-API-000
-**Versión:** 1.1
-**Fecha:** 2025-10-27
+**Versión:** 1.0
+**Fecha:** 2025-10-28
 
 ---
 
@@ -12,33 +12,33 @@
 |Campo|Detalle|
 |---|---|
 |**Código**|UC-API-000|
-|**Nombre**|Operar flujo de modelado|
-|**Actor primario**|AUTOR FUNCIONAL|
-|**Actores de soporte**|SERVICIO DE UI, OPERACIONES DE PLATAFORMA|
+|**Nombre**|Gestionar autenticación y tokens|
+|**Actor primario**|SERVICIO DE UI|
+|**Actores de soporte**|BASE DE DATOS, SERVICIO DE AUDITORÍA|
 |**Frecuencia estimada**|Alta|
-|**Prioridad**|Alta — habilita el ciclo completo de modelado colaborativo|
+|**Prioridad**|Alta — controla el acceso seguro a todos los recursos|
 
 ---
 
 ## 2. PROPÓSITO Y ALCANCE
 
-- **Propósito:** Permitir que el AUTOR FUNCIONAL capture, revise y publique un modelo de amenazas completo desde una sola experiencia.
-- **Resultado esperado:** El modelo queda registrado con historial disponible y artefactos listos para revisión por seguridad.
+- **Propósito:** Permitir que la UI registre usuarios, autentique credenciales y valide tokens JWT para proteger los endpoints.
+- **Resultado esperado:** La API entrega credenciales válidas y bloquea solicitudes con tokens expirados o inválidos.
 - **Alcance incluye:**
-  - ✅ Crear o actualizar el modelo base y solicitar confirmación visual.
-  - ✅ Guardar versiones con metadatos de trazabilidad.
-  - ✅ Desencadenar el análisis de amenazas y recibir los resultados para su revisión.
+  - ✅ Registrar cuentas nuevas verificando unicidad del correo.
+  - ✅ Iniciar sesión validando contraseña y generando JWT.
+  - ✅ Validar tokens en middleware antes de acceder a rutas protegidas.
 - **Fuera de alcance:**
-  - ❌ Mantener dependencias de infraestructura (servidores, librerías).
-  - ❌ Diseñar controles técnicos derivados del análisis.
+  - ❌ Gestión de roles avanzados o MFA (se abordará en otro caso de uso).
+  - ❌ Recuperación de contraseñas (pendiente de definición).
 
 ---
 
 ## 3. PRECONDICIONES
 
-- El AUTOR FUNCIONAL inició sesión en la UI y posee permisos de edición.
-- El sistema cuenta con conectividad hacia los servicios de renderizado y análisis.
-- Existe espacio disponible para almacenar historial y artefactos generados.
+- La base de datos de usuarios está disponible.
+- Existe una clave secreta configurada para firmar JWT.
+- El servicio de auditoría puede registrar eventos de autenticación.
 
 ---
 
@@ -46,14 +46,13 @@
 
 |Paso|Actor|Interacción|
 |---|---|---|
-|1|AUTOR FUNCIONAL|Abre el editor y carga el modelo vigente o crea uno nuevo.
-|2|SISTEMA|Muestra el contenido almacenado y confirma que la sesión está activa.
-|3|AUTOR FUNCIONAL|Solicita una previsualización para validar que el modelo es consistente.
-|4|SISTEMA|Genera la previsualización y notifica si existen problemas visibles.
-|5|AUTOR FUNCIONAL|Confirma el guardado del modelo y proporciona una descripción del cambio.
-|6|SISTEMA|Persiste la nueva versión con los metadatos de autoría y registra el evento en el historial.
-|7|AUTOR FUNCIONAL|Lanza el análisis de amenazas sobre la versión recién guardada.
-|8|SISTEMA|Ejecuta el análisis, prepara los artefactos asociados y comunica los hallazgos disponibles.
+|1|SERVICIO DE UI|Envía `POST /api/auth/register` con correo, nombre y contraseña.| 
+|2|API|Verifica unicidad del correo, encripta la contraseña y registra al usuario.| 
+|3|SERVICIO DE UI|Envía `POST /api/auth/login` con credenciales válidas.| 
+|4|API|Valida la contraseña, genera token JWT con expiración de 7 días y responde con datos de usuario.| 
+|5|SERVICIO DE UI|Incluye el token en el encabezado `Authorization` al consumir endpoints protegidos.| 
+|6|MIDDLEWARE DE API|Decodifica el token, verifica vigencia y recupera el usuario activo antes de invocar la ruta solicitada.| 
+|7|API|Registra los eventos de registro, inicio de sesión y validación en la bitácora de auditoría.| 
 
 ---
 
@@ -61,8 +60,8 @@
 
 |ID|Condición|Curso de acción|
 |---|---|---|
-|FA-01|La previsualización identifica errores de sintaxis|El SISTEMA informa el error; el AUTOR FUNCIONAL corrige el modelo y regresa al Paso 3.
-|FA-02|El análisis genera observaciones de severidad alta|El SISTEMA entrega el listado de hallazgos y mantiene la versión activa para que el AUTOR FUNCIONAL evalúe ajustes antes de publicar.
+|FA-01|El usuario intenta iniciar sesión con credenciales incorrectas|La API responde `401 Unauthorized` con mensaje "Credenciales inválidas" sin detallar cuál campo falló.| 
+|FA-02|El token expira|El middleware devuelve `401 Unauthorized` con mensaje "Token expirado" y solicita renovar sesión.| 
 
 ---
 
@@ -70,29 +69,38 @@
 
 |ID|Evento|Respuesta observable|
 |---|---|---|
-|FE-01|No es posible almacenar la versión|El SISTEMA informa la falla, conserva la versión previa activa y solicita contactar a OPERACIONES DE PLATAFORMA.
-|FE-02|Los servicios de análisis no responden|El SISTEMA detiene el proceso, registra el incidente y advierte al AUTOR FUNCIONAL que el análisis deberá reintentarse.
+|FE-01|Se detecta un token malformado|La API responde `401 Unauthorized` con mensaje "Token inválido" y registra el incidente.| 
+|FE-02|El usuario se encuentra inactivo en la base de datos|La API devuelve `401 Unauthorized` indicando "Cuenta deshabilitada" y no permite avanzar.| 
+|FE-03|Falla la inserción en base de datos|La API responde `500 Internal Server Error` y registra el error para seguimiento de operaciones.| 
 
 ---
 
 ## 7. POSTCONDICIONES
 
-- **Éxito:** El historial refleja la nueva versión del modelo con sus metadatos y los artefactos de análisis quedan disponibles para su consulta.
-- **Fallo:** Se mantiene la última versión consistente sin modificaciones y se documenta la causa del fallo para seguimiento.
+- **Éxito:** Se crea o autentica el usuario y la sesión queda representada por un token válido adjunto a futuras solicitudes.
+- **Fallo:** No se actualiza la información; las solicitudes subsecuentes requieren autenticación válida.
 
 ---
 
 ## 8. REQUISITOS ESPECIALES
 
-- Las notificaciones deben indicar con claridad qué pasos seguir cuando existan errores de modelado.
-- Los registros de auditoría deben conservar quién ejecutó cada acción y cuándo se realizaron.
-- La plataforma debe exponer el estado del análisis (en progreso, completo, fallido) sin requerir acceso a consola técnica.
+- Los tokens deben firmarse con algoritmo HS256 e incluir `user_id`, `email`, `role` y `exp`.
+- Las contraseñas se almacenan utilizando bcrypt con factor de costo 12 como mínimo.
+- Cada operación debe registrar un evento de auditoría con timestamp y dirección IP de la petición.
 
 ---
 
 ## 9. REFERENCIAS Y TRAZABILIDAD
 
-- **Casos de uso relacionados:** UC-UI-001.
-- **Artefactos complementarios:** No aplica (diagramas se documentarán por separado).
-- **Notas adicionales:** Mantiene alineación con el flujo integral descrito en el catálogo de UI.
+- **Casos de uso relacionados:** UC-UI-004, UC-API-001.
+- **Artefactos complementarios:** No aplica.
+- **Notas adicionales:** El endpoint de refresh tokens quedará documentado cuando se implemente la rotación.
 
+---
+
+## 10. TAREAS PENDIENTES DE DOCUMENTACIÓN
+
+|ID|Tarea|Estado|Dueño recomendado|
+|---|---|---|---|
+|TD-API-000-01|Incluir ejemplos de payload de auditoría en el manual de operaciones.|Pendiente|Operaciones|
+|TD-API-000-02|Documentar política de expiración configurable del token.|En curso|Seguridad|

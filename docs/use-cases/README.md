@@ -75,11 +75,14 @@ La UI comparte el mismo identificador base `UC-UI-XXX` y se documenta bajo
 `docs/use-cases/ui/`. Cada flujo indica explícitamente qué endpoints de la API
 lo soportan para asegurar la trazabilidad end to end.
 
-| Código UI   | Nombre                                         | Casos de uso API asociados                                | Estado |
-|-------------|------------------------------------------------|-----------------------------------------------------------|--------|
-| UC-UI-001   | Gestionar diagramas y versiones                | UC-API-000, UC-API-001, UC-API-002, UC-API-003, UC-API-004, UC-API-008 | Diseño detallado documentado |
-| UC-UI-002   | Ejecutar análisis y generar artefactos         | UC-API-005, UC-API-006, UC-API-007                        | Diseño detallado documentado |
-| UC-UI-003   | Visualizar hallazgos y compartir resultados    | UC-API-009                                              | Diseño detallado documentado |
+| Código UI   | Nombre                                     | Casos de uso API asociados                                                            | Estado |
+|-------------|--------------------------------------------|---------------------------------------------------------------------------------------|--------|
+| UC-UI-001   | Diseñar modelos visuales                   | UC-API-001, UC-API-003, UC-API-004, UC-API-008, UC-API-010, UC-API-015               | Diseño detallado documentado |
+| UC-UI-002   | Generar artefactos analíticos              | UC-API-006, UC-API-007, UC-API-009, UC-API-010, UC-API-014                           | Diseño detallado documentado |
+| UC-UI-003   | Compartir hallazgos con el equipo          | UC-API-003, UC-API-007, UC-API-009, UC-API-011, UC-API-012, UC-API-013, UC-API-014   | Diseño detallado documentado |
+| UC-UI-004   | Autenticar acceso a la plataforma          | UC-API-000                                                                         | Diseño detallado documentado |
+| UC-UI-005   | Administrar versiones desde la UI          | UC-API-004, UC-API-008, UC-API-013                                                 | Diseño detallado documentado |
+| UC-UI-006   | Orquestar revisión de arquitectura         | UC-API-006, UC-API-007, UC-API-013, UC-API-014, UC-API-015                          | Diseño detallado documentado |
 
 Consulta `docs/use-cases/ui/README.md` para obtener el detalle de cada flujo.
 
