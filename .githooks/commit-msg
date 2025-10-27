@@ -7,7 +7,7 @@ commit_msg_file="$1"
 
 read -r first_line < "$commit_msg_file" || first_line=""
 
-pattern='^(feat|fix|docs|style|refactor|test|chore|perf)(\([a-z0-9-]+\))?(!)?: .+'
+pattern='^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([A-Za-z0-9][A-Za-z0-9/-]*\))?(!)?: .+'
 
 if [[ -z "$first_line" ]]; then
     echo "[ERROR] Commit message is empty." >&2
@@ -18,7 +18,7 @@ if [[ ! $first_line =~ $pattern ]]; then
     cat >&2 <<'MSG'
 [ERROR] Commit message must follow Conventional Commits format:
   <type>(<scope>): <description>
-Allowed types: feat, fix, docs, style, refactor, test, chore, perf
+Allowed types: build, chore, ci, docs, feat, fix, perf, refactor, revert, style, test
 Example: fix(api): handle null response bodies
 MSG
     exit 1
