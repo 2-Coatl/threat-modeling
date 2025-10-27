@@ -23,7 +23,7 @@ diseño técnico ni en detalles de implementación.
 
 - `README.md` (este archivo) — orientación general e inventario.
 - `templates/` — plantillas para nuevos casos de uso.
-- `UC-XXX-<slug>.md` — especificaciones activas.
+- `api/` — catálogo de interacciones expuestas por la plataforma (casos `UC-API-XXX`).
 - `archive/` — casos de uso fuera de alcance pero preservados para trazabilidad.
 - `ui/` — catálogo específico de experiencias de interfaz.
 
@@ -42,29 +42,28 @@ diseño técnico ni en detalles de implementación.
    cambia la interacción desde la perspectiva del actor.
 6. **Documenta referencias y trazabilidad.** Completa la sección 9 para enlazar
    casos de uso relacionados, diagramas o artefactos complementarios.
-7. **Versiona los documentos.** Actualiza la sección de metadatos con la fecha y
+7. **Gestiona tareas de documentación.** Usa la sección 10 de la plantilla para
+   registrar acciones pendientes y sincronizarlas con los catálogos (`api/`,
+   `ui/`, etc.).
+8. **Versiona los documentos.** Actualiza la sección de metadatos con la fecha y
    versión cuando cambien reglas o comportamientos.
 
 ## Inventario vigente
 
-| Código       | Nombre                                           | Versión | Última actualización |
-|--------------|--------------------------------------------------|---------|----------------------|
-| UC-API-000   | Operar el flujo de modelado con PlantUML y pytm   | 1.1     | 2025-10-27           |
-| UC-API-001   | Generar diagramas versionados                     | 1.1     | 2025-10-27           |
-| UC-API-002   | Previsualizar diagrama sin historial              | 1.1     | 2025-10-27           |
-| UC-API-003   | Consultar historial y versiones de diagramas      | 1.1     | 2025-10-27           |
-| UC-API-004   | Restaurar una versión previa del diagrama         | 1.1     | 2025-10-27           |
-| UC-API-005   | Renderizar modelos pytm con Plantweb              | 1.1     | 2025-10-27           |
-| UC-API-006   | Generar artefactos con PlantUML                   | 1.1     | 2025-10-27           |
-| UC-API-007   | Analizar amenazas con pytm y generar reporte      | 1.1     | 2025-10-27           |
-| UC-API-008   | Gestionar correcciones con historial y rollback   | 1.1     | 2025-10-27           |
-| UC-API-009   | Presentar hallazgos y artefactos del análisis     | 1.1     | 2025-10-27           |
+Para obtener el inventario actualizado de casos de uso de API consulta el
+catálogo dedicado en `docs/use-cases/api/README.md`. El inventario de casos de
+uso de UI y su mapeo con la API permanece en `docs/use-cases/ui/README.md`.
+El seguimiento de tareas pendientes de documentación para la API se registra en
+la sección "Próximas tareas de documentación" del mismo catálogo.
 
 ## Archived use cases
 
 Los casos de uso que pertenecen a plataformas heredadas se trasladan al
 subdirectorio `archive/` para mantener la trazabilidad sin mezclarlos con el
 alcance vigente de la plataforma.
+
+Consulta `docs/use-cases/api/README.md` para conocer los detalles y estados de
+cada especificación activa expuesta por la API.
 
 | Código  | Nombre                       | Motivo de archivo                 |
 |---------|------------------------------|-----------------------------------|
