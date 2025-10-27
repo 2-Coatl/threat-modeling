@@ -101,7 +101,7 @@
 ## 9. REFERENCIAS Y TRAZABILIDAD
 
 - **Casos de uso relacionados:** UC-UI-004, UC-API-001, UC-API-004, UC-API-008, UC-API-010, UC-API-015.
-- **Artefactos complementarios:** No aplica.
+- **Artefactos complementarios:** [`docs/architecture/visual-editor.md`](../../architecture/visual-editor.md).
 - **Notas adicionales:** Mantener consistencia con los lineamientos del componente `ThreatModelCanvas` documentados en la guía de UI.
 
 ---
