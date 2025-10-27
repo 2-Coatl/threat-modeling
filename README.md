@@ -846,7 +846,7 @@ sudo /vagrant/infrastructure/bootstrap.sh
 
 ### Documentación interna
 
-- [Catálogo de reglas de negocio](docs/standards/business-rules-catalog.md)
+- [Catálogo de reglas de negocio](docs/bussines-rules/business-rules-catalog.md)
 - [Threat Modeling Engineering Ruleset](docs/standards/engineering-ruleset.md)
 
 ### pytm
