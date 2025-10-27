@@ -6,7 +6,7 @@ Bash-based automation, Python (Flask + PyTM), PlantUML generation, and the
 React/SCSS/Webpack UI.  Treat this as a living document – prefer
 pragmatism and clarity over dogmatism.  For the catalog of business rules that
 these conventions support, consult the
-[`business-rules-catalog`](business-rules-catalog.md).
+[`business-rules-catalog`](../bussines-rules/business-rules-catalog.md).
 
 ## 1. Core Principles
 
