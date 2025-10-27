@@ -1,24 +1,21 @@
 # Sistema de Threat Modeling con pytm
 
-Sistema automatizado para modelado de amenazas utilizando el framework OWASP pytm, Apache Tomcat y PlantUML Server para generación de diagramas y reportes de seguridad.
+Plataforma colaborativa para modelado de amenazas que combina un editor visual drag & drop en React con un backend Flask encargado de ejecutar pytm, generar diagramas y versionar los artefactos resultantes.
 
 ## Inicio Rápido
 
 ```bash
-# 1. Iniciar VM
-make vm-up
+# 1. Instalar dependencias del monorepo
+make setup
 
-# 2. Acceder a la VM
-make vm-ssh
+# 2. Levantar servicios
+make dev
 
-# 3. Generar modelos de amenazas
-tm-generate
-
-# 4. Ver resultados en el navegador
-# Abrir: http://localhost:8080/outputs/
+# 3. Abrir la interfaz visual
+# Navega a http://localhost:3000/
 ```
 
-> **Nota**: El archivo de configuración de Vagrant vive en `infrastructure/Vagrantfile`. Los comandos de `make` sólo envuelven a Vagrant y permiten ejecutarlo desde la raíz del repositorio.
+> **Nota**: Consulta [`docs/architecture/visual-editor.md`](docs/architecture/visual-editor.md) para conocer los componentes y requisitos detallados del entorno de desarrollo.
 
 ## Tabla de Contenidos
 
@@ -71,38 +68,57 @@ Esto asegura:
 ## Arquitectura
 
 ```
-┌────────────────────────────────────────────────────────┐
-│                  Interfaz de Usuario                   │
-│  Navegador: http://localhost:8080/                    │
-│    ├─ /plantuml/        (PlantUML Server)             │
-│    └─ /outputs/         (Diagramas/Reportes)          │
-└────────────────────────────────────────────────────────┘
-                          │
-                          ▼
-┌────────────────────────────────────────────────────────┐
-│             Apache Tomcat 10.1.47                      │
-│    Puerto: 8080    Usuario: tomcat                    │
-│    ├─ PlantUML WAR (diagramas de secuencia)           │
-│    └─ Outputs Context (archivos estáticos)            │
-└────────────────────────────────────────────────────────┘
-                          │
-                          ▼
-┌────────────────────────────────────────────────────────┐
-│           Generación de Modelos de Amenazas           │
-│    Usuario: threatmodel    Tool: bin/generate         │
-│    ├─ pytm (DFD via Graphviz)                         │
-│    ├─ PlantUML Server (Sequence via HTTP)             │
-│    └─ Pandoc (Reportes HTML)                          │
-└────────────────────────────────────────────────────────┘
-                          │
-                          ▼
-┌────────────────────────────────────────────────────────┐
-│              Almacenamiento de Outputs                 │
-│    /vagrant/api/output/                          │
-│    ├─ diagrams/ (archivos PNG)                        │
-│    └─ reports/  (archivos HTML)                       │
-└────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                    FRONTEND (React)                          │
+├─────────────────────────────────────────────────────────────┤
+│  ┌─────────────────────────────────────────────────────┐     │
+│  │   Visual Editor (React Flow)                        │     │
+│  │   - Drag & Drop desde paleta                        │     │
+│  │   - Propiedades contextuales                        │     │
+│  │   - Lienzo con zoom, pan y selección múltiple       │     │
+│  └─────────────────┬───────────────────────────────────┘     │
+│                    │ Modelo visual (JSON)                    │
+│  ┌─────────────────▼───────────────────────────────────┐     │
+│  │   Generador Python (pytm)                          │     │
+│  │   - Convierte JSON → código                        │     │
+│  │   - Valida propiedades y tipos                     │     │
+│  │   - Mantiene sincronía con el editor               │     │
+│  └─────────────────┬───────────────────────────────────┘     │
+│                    │ Código Python generado                  │
+│  ┌─────────────────▼───────────────────────────────────┐     │
+│  │   Code Editor (Monaco)                              │     │
+│  │   - Vista en pestaña "Code"                         │     │
+│  │   - Edición manual opcional                         │     │
+│  └─────────────────┬───────────────────────────────────┘     │
+└────────────────────┼─────────────────────────────────────────┘
+                     │ REST API `/api/pytm/*`
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    BACKEND (Flask)                           │
+├─────────────────────────────────────────────────────────────┤
+│  ┌─────────────────────────────────────────────────────┐     │
+│  │   PytmModelController                               │     │
+│  │   - Persistencia en base de datos + Git             │     │
+│  │   - Validación de código                            │     │
+│  │   - Gestión de versiones                            │     │
+│  └─────────────────┬───────────────────────────────────┘     │
+│                    │                                         │
+│  ┌─────────────────▼───────────────────────────────────┐     │
+│  │   PytmExecutor                                      │     │
+│  │   - `model.py --dfd` (Graphviz)                     │     │
+│  │   - `model.py --seq` (PlantUML)                     │     │
+│  │   - `model.py --report`                             │     │
+│  └─────────────────┬───────────────────────────────────┘     │
+│        ┌────────────┴────────────┐                           │
+│        ▼                         ▼                           │
+│  ┌──────────┐           ┌──────────────┐                     │
+│  │ Graphviz │           │  PlantUML    │                     │
+│  │  (DFD)   │           │   Server     │                     │
+│  └──────────┘           └──────────────┘                     │
+└─────────────────────────────────────────────────────────────┘
 ```
+
+> Consulta el documento de arquitectura para el diagrama ampliado y las responsabilidades de cada módulo.
 
 ---
 
@@ -110,22 +126,19 @@ Esto asegura:
 
 ### Capacidades Principales
 
-- **Instalación Idempotente**: Ejecuta el setup múltiples veces de forma segura
-- **Auto-descubrimiento**: Encuentra y procesa automáticamente todos los modelos
-- **Auto-reparación**: Detecta componentes rotos y reinstala automáticamente
-- **Acceso Web**: Navega outputs vía HTTP sin necesidad de filesystem
-- **PlantUML Server**: Generación de diagramas vía servicio web
-- **Usuario Dedicado**: Separación de privilegios con usuario `threatmodel`
-- **Servicio Systemd**: PlantUML/Tomcat como servicio del sistema
-- **Sin Fallas Silenciosas**: Todas las operaciones son verificadas y reportadas
+- **Editor visual drag & drop**: Construye modelos con nodos pytm preconfigurados, conexiones y formularios de propiedades.
+- **Sincronización con código**: Cada cambio en el lienzo genera Python válido listo para ejecutarse con pytm.
+- **Análisis automatizado**: Ejecuta pytm para producir diagramas DFD, secuencias y reportes de amenazas desde la UI.
+- **Versionado integrado**: El backend guarda el JSON visual y el script Python en Git para trazabilidad y auditorías.
+- **PlantUML + Graphviz**: Renderizado consistente de diagramas consumido directamente desde la UI.
+- **Flujos autenticados**: Los endpoints REST requieren JWT emitidos por el módulo de autenticación.
 
 ### Características de Seguridad
 
-- Usuario dedicado del sistema con permisos limitados
-- Acceso de solo lectura a outputs vía web
-- PlantUML con perfil de seguridad INTERNET (restringido)
-- No se permiten includes remotos en PlantUML
-- Logging completo de todas las operaciones
+- Control de acceso mediante JWT y scopes de edición.
+- Validación de esquema al persistir modelos visuales y código generado.
+- Historial de cambios firmado por el backend, con referencia a commit y autor.
+- Sanitización de nombres y propiedades antes de renderizar artefactos.
 
 ### Generación de Outputs
 
@@ -778,6 +791,17 @@ Defaults:threatmodel !requiretty
 ---
 
 ## Desarrollo
+
+### Configuración de ganchos de Git
+
+- Ejecuta `infrastructure/bin/setup` inmediatamente después de clonar el repositorio
+  para que `core.hooksPath` apunte a `.githooks/`.
+- Si prefieres configurarlo manualmente, usa
+  `git config core.hooksPath .githooks` desde la raíz del proyecto.
+- El hook `commit-msg` valida mensajes bajo el estándar Conventional Commits y
+  solo acepta los tipos `build`, `chore`, `ci`, `docs`, `feat`, `fix`, `perf`,
+  `refactor`, `revert`, `style` y `test`; evita omitirlo con `--no-verify` para
+  mantener un historial consistente.
 
 ### Agregar Nuevos Modelos
 

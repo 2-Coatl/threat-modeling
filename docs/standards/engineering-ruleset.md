@@ -40,12 +40,15 @@ pragmatism and clarity over dogmatism.
 │   ├── public/      # Static assets served directly
 │   └── webpack/     # Build configuration and tooling
 ├── docs/            # Standards, use cases, and project documentation
+│   └── architecture/ # Arquitecturas funcionales (visual editor, pipelines)
 └── test/            # Automated checks and sample fixtures
 ```
 
-*Expand `ui/src/` with feature-specific subdirectories as the web client grows.
-Flask routes and blueprints live under `api/` and expose narrow REST interfaces
-for the SPA without tight coupling.*
+*Consulta [`docs/architecture/visual-editor.md`](../architecture/visual-editor.md)
+para el desglose del flujo drag & drop → pytm. Expande `ui/src/` con
+subdirectorios específicos conforme crece el cliente web. Flask registra
+blueprints bajo `api/` y expone interfaces REST estrechas para la SPA sin
+acoplarla a la infraestructura.*
 
 ## 3. Naming Conventions
 

@@ -27,6 +27,9 @@ else
     done
 fi
 
+printf '[INFO] Validating commit message hook behavior...\n'
+infrastructure/scripts/test-commit-hooks.sh
+
 printf '[INFO] Validating Vagrantfile syntax...\n'
 if [[ -f "infrastructure/Vagrantfile" ]]; then
     ruby -c infrastructure/Vagrantfile >/dev/null

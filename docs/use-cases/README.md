@@ -84,5 +84,7 @@ lo soportan para asegurar la trazabilidad end to end.
 | UC-UI-005   | Administrar versiones desde la UI          | UC-API-004, UC-API-008, UC-API-013                                                 | Diseño detallado documentado |
 | UC-UI-006   | Orquestar revisión de arquitectura         | UC-API-006, UC-API-007, UC-API-013, UC-API-014, UC-API-015                          | Diseño detallado documentado |
 
+El desglose técnico del editor visual y su integración con pytm está documentado en [`docs/architecture/visual-editor.md`](../architecture/visual-editor.md), referencia obligatoria para mantener la trazabilidad entre comportamiento descrito y componentes implementados.
+
 Consulta `docs/use-cases/ui/README.md` para obtener el detalle de cada flujo.
 
