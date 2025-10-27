@@ -4,7 +4,9 @@ This ruleset consolidates the conventions that guide our monolithic-but-modular
 stack.  It adapts our legacy standards to the technologies we use today:
 Bash-based automation, Python (Flask + PyTM), PlantUML generation, and the
 React/SCSS/Webpack UI.  Treat this as a living document – prefer
-pragmatism and clarity over dogmatism.
+pragmatism and clarity over dogmatism.  For the catalog of business rules that
+these conventions support, consult the
+[`business-rules-catalog`](business-rules-catalog.md).
 
 ## 1. Core Principles
 
