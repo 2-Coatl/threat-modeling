@@ -2,7 +2,7 @@
 
 ## Resumen
 
-Esta guía describe la plataforma drag & drop basada en React Flow que se integra con pytm para generar modelos de amenazas como código. El objetivo es que colaboradores técnicos y no técnicos compartan una misma representación: un lienzo visual sincronizado con Python ejecutable.
+Esta guía describe la plataforma drag & drop basada en React Flow que se integra con pytm para generar modelos de amenazas como código. El objetivo es que colaboradores técnicos y no técnicos compartan una misma representación: un lienzo visual con sincronización unidireccional hacia el script Python ejecutable.
 
 - **Frontend:** React + React Flow para manipular nodos, edges y formularios de propiedades.
 - **Backend:** Flask expone endpoints REST para persistencia, validación y ejecución de pytm.
@@ -15,8 +15,10 @@ Esta guía describe la plataforma drag & drop basada en React Flow que se integr
    - Herramientas comerciales como IriusRisk demuestran la viabilidad de editors accesibles para perfiles no técnicos, sirviendo como referencia de UX.
 2. **Principios**
    - Edición visual primero, con código generado automáticamente y editable bajo demanda.
-   - Sincronización inmediata del lienzo y el script para evitar divergencias.
+   - Sincronización automática del lienzo hacia el script generado, evitando asumir retornos desde el código.
    - Persistencia versionada: cada guardado registra el JSON y el Python generado.
+
+El editor Monaco recibe exclusivamente el script producido por el generador y conserva cualquier ajuste manual realizado allí. Una advertencia persistente comunica que dichos cambios no regresan al lienzo, alineando las expectativas del usuario sobre el flujo unidireccional.
 
 ## Arquitectura end-to-end
 
@@ -43,7 +45,7 @@ Esta guía describe la plataforma drag & drop basada en React Flow que se integr
 │  │   Code Editor (Monaco)                              │     │
 │  │   - View/Edit generated Python                      │     │
 │  │   - Syntax highlighting                             │     │
-│  │   - Bidirectional sync with Visual Editor           │     │
+│  │   - Sincronización unidireccional (lienzo → código) │     │
 │  └─────────────────┬───────────────────────────────────┘     │
 └────────────────────┼─────────────────────────────────────────┘
                      │ POST /api/pytm/models
