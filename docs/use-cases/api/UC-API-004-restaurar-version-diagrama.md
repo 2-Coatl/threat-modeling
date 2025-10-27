@@ -1,9 +1,9 @@
-# UC-API-004: Restaurar versión de diagrama
+# UC-API-004: Actualizar modelos visuales
 
 **Sistema:** Threat Modeling Platform API
 **Caso de Uso:** UC-API-004
-**Versión:** 1.1
-**Fecha:** 2025-10-27
+**Versión:** 1.0
+**Fecha:** 2025-10-28
 
 ---
 
@@ -12,33 +12,33 @@
 |Campo|Detalle|
 |---|---|
 |**Código**|UC-API-004|
-|**Nombre**|Restaurar versión de diagrama|
+|**Nombre**|Actualizar modelos visuales|
 |**Actor primario**|SERVICIO DE UI|
-|**Actores de soporte**|AUTOR FUNCIONAL, REVISOR DE SEGURIDAD|
-|**Frecuencia estimada**|Baja|
-|**Prioridad**|Media — garantiza la posibilidad de revertir cambios dañinos|
+|**Actores de soporte**|BASE DE DATOS, REPOSITORIO GIT, CACHE DE DIAGRAMAS|
+|**Frecuencia estimada**|Alta|
+|**Prioridad**|Alta — permite evolución continua del modelo|
 
 ---
 
 ## 2. PROPÓSITO Y ALCANCE
 
-- **Propósito:** Recuperar una versión previa del diagrama cuando la actual presenta errores o necesita revisión posterior.
-- **Resultado esperado:** El historial registra la restauración y deja activa la versión seleccionada para continuar el análisis.
+- **Propósito:** Facilitar la actualización de modelos existentes, sincronizando cambios visuales y de código con la persistencia y el repositorio.
+- **Resultado esperado:** La API valida y guarda las modificaciones, genera un nuevo commit y actualiza las referencias asociadas.
 - **Alcance incluye:**
-  - ✅ Seleccionar la versión objetivo a restaurar.
-  - ✅ Guardar la versión restaurada como la más reciente con anotaciones de auditoría.
-  - ✅ Confirmar al actor que el contenido se revirtió exitosamente.
+  - ✅ Validar la estructura del modelo y la sintaxis de código enviada en la actualización.
+  - ✅ Persistir cambios y actualizar `updated_at` en base de datos.
+  - ✅ Crear commit en Git y limpiar caches dependientes (diagramas, hallazgos).
 - **Fuera de alcance:**
-  - ❌ Resolver conflictos de contenido cuando hay ediciones simultáneas (gestionados por gobernanza de equipo).
-  - ❌ Eliminar versiones del historial.
+  - ❌ Gestión de conflictos de merge (cubierto en UC-API-008).
+  - ❌ Modificación de permisos o compartidos (cubierto en UC-API-009).
 
 ---
 
 ## 3. PRECONDICIONES
 
-- Existe un historial con al menos una versión anterior disponible.
-- El actor cuenta con permisos de edición sobre el diagrama.
-- El repositorio histórico acepta nuevas escrituras para registrar la restauración.
+- El modelo existe y el usuario cuenta con permisos de edición.
+- El repositorio Git está disponible para escribir nuevos commits.
+- Los caches de diagramas permiten invalidación mediante identificador de modelo.
 
 ---
 
@@ -46,12 +46,14 @@
 
 |Paso|Actor|Interacción|
 |---|---|---|
-|1|SERVICIO DE UI|Solicita restaurar una versión específica identificada por el actor.
-|2|SISTEMA|Confirma permisos y existencia de la versión seleccionada.
-|3|SISTEMA|Recupera el contenido asociado y lo copia como la versión más reciente.
-|4|SISTEMA|Anota en el historial que la acción corresponde a una restauración, incluyendo quién la solicitó y por qué.
-|5|SISTEMA|Responde con el identificador de la nueva versión restaurada.
-|6|SERVICIO DE UI|Informa al AUTOR FUNCIONAL que el diagrama volvió al estado solicitado.
+|1|SERVICIO DE UI|Envía `PUT /api/models/{model_id}` con modelo visual actualizado y código Python generado.| 
+|2|API|Valida el payload, compila el código y verifica consistencia de nodos y flujos.| 
+|3|API|Actualiza el registro en `pytm_models` con el nuevo contenido y marca `updated_at=NOW()`.| 
+|4|API|Escribe cambios en el archivo Python dentro del repositorio, crea commit y obtiene `new_commit_hash`.| 
+|5|API|Limpia caches relacionados (`diagrams`, `threat_findings`) para que se regeneren con la nueva versión.| 
+|6|API|Registra evento de auditoría `model_updated`.| 
+|7|API|Responde `200 OK` con detalles del modelo actualizado y hash del commit.| 
+|8|SERVICIO DE UI|Refresca la vista del modelo y notifica al usuario la confirmación del guardado.| 
 
 ---
 
@@ -59,7 +61,8 @@
 
 |ID|Condición|Curso de acción|
 |---|---|---|
-|FA-01|La versión actual ya coincide con la solicitada|El SISTEMA avisa que no se requieren cambios y mantiene el estado.
+|FA-01|El usuario solicita guardar sin cambios detectados|La API responde `200 OK` indicando "Sin cambios" y no crea un nuevo commit.| 
+|FA-02|El payload incluye bandera `skip_git=true` para guardados temporales|La API guarda en base de datos, omite commit y marca el modelo como borrador pendiente.| 
 
 ---
 
@@ -67,28 +70,38 @@
 
 |ID|Evento|Respuesta observable|
 |---|---|---|
-|FE-01|La versión solicitada no existe|El SISTEMA rechaza la restauración y orienta al actor para seleccionar una versión válida.
-|FE-02|Falla el guardado de la versión restaurada|El SISTEMA informa la falla, conserva la versión previa y sugiere reintentar tras soporte técnico.
+|FE-01|El código no compila|La API responde `400 Bad Request` señalando línea y error devuelto por el compilador.| 
+|FE-02|El commit falla|La API revierte los cambios aplicados en base de datos y responde `500 Internal Server Error`.| 
+|FE-03|El usuario no tiene permiso de edición|La API devuelve `403 Forbidden` y no altera la versión existente.| 
 
 ---
 
 ## 7. POSTCONDICIONES
 
-- **Éxito:** El historial incorpora una entrada que marca la restauración y el diagrama activo refleja el contenido elegido.
-- **Fallo:** El diagrama permanece sin cambios y se registra la razón del fallo para seguimiento.
+- **Éxito:** El modelo queda actualizado, las cachés se invalidan y el historial Git refleja el nuevo commit.
+- **Fallo:** No se aplica ningún cambio y se mantiene la versión anterior.
 
 ---
 
 ## 8. REQUISITOS ESPECIALES
 
-- Las restauraciones deben quedar claramente identificadas para auditoría futura.
-- Los mensajes al actor deben explicar el impacto de la restauración en versiones posteriores.
+- Incluir `new_commit_hash` y `previous_commit_hash` en la respuesta para trazabilidad.
+- Registrar el tiempo que toma el guardado para indicadores de rendimiento.
+- Emitir eventos de dominio (`model.updated`) para subsistemas interesados (p. ej. notificaciones).
 
 ---
 
 ## 9. REFERENCIAS Y TRAZABILIDAD
 
-- **Casos de uso relacionados:** UC-UI-001, UC-API-003.
-- **Artefactos complementarios:** No aplica (diagramas de rollback pendientes de adjuntar).
-- **Notas adicionales:** Proporciona el mecanismo de recuperación utilizado en UC-API-008.
+- **Casos de uso relacionados:** UC-UI-001, UC-API-001, UC-API-008, UC-API-010.
+- **Artefactos complementarios:** No aplica.
+- **Notas adicionales:** Coordinado con el servicio de generación de diagramas para invalidar caches automáticamente.
 
+---
+
+## 10. TAREAS PENDIENTES DE DOCUMENTACIÓN
+
+|ID|Tarea|Estado|Dueño recomendado|
+|---|---|---|---|
+|TD-API-004-01|Documentar uso de bandera `skip_git` una vez que se defina el proceso de borradores.|Pendiente|Producto|
+|TD-API-004-02|Agregar ejemplos de respuesta cuando se detecta "Sin cambios".|Pendiente|Documentación|

@@ -1,9 +1,9 @@
-# UC-API-005: Renderizar modelo pytm
+# UC-API-005: Eliminar modelos
 
 **Sistema:** Threat Modeling Platform API
 **Caso de Uso:** UC-API-005
-**Versión:** 1.1
-**Fecha:** 2025-10-27
+**Versión:** 1.0
+**Fecha:** 2025-10-28
 
 ---
 
@@ -12,33 +12,33 @@
 |Campo|Detalle|
 |---|---|
 |**Código**|UC-API-005|
-|**Nombre**|Renderizar modelo pytm|
+|**Nombre**|Eliminar modelos|
 |**Actor primario**|SERVICIO DE UI|
-|**Actores de soporte**|AUTOR FUNCIONAL, OPERACIONES DE PLATAFORMA|
+|**Actores de soporte**|BASE DE DATOS, REPOSITORIO GIT|
 |**Frecuencia estimada**|Media|
-|**Prioridad**|Media — entrega visualizaciones auxiliares para el análisis|
+|**Prioridad**|Media — asegura limpieza de datos y repositorio|
 
 ---
 
 ## 2. PROPÓSITO Y ALCANCE
 
-- **Propósito:** Generar representaciones gráficas del modelo pytm asociado para apoyar la revisión del AUTOR FUNCIONAL y del REVISOR DE SEGURIDAD.
-- **Resultado esperado:** Se producen los diagramas auxiliares (por ejemplo, DFD) y quedan disponibles para consulta.
+- **Propósito:** Permitir que la UI elimine modelos y sus artefactos asociados cuando ya no se requieren.
+- **Resultado esperado:** La API remueve registros, archivos y compartidos relacionados garantizando consistencia.
 - **Alcance incluye:**
-  - ✅ Seleccionar el modelo pytm vigente.
-  - ✅ Generar las imágenes necesarias para contextualizar el análisis.
-  - ✅ Informar la ubicación donde pueden consultarse las salidas.
+  - ✅ Validar que el usuario sea propietario o administrador.
+  - ✅ Eliminar registros dependientes (hallazgos, comentarios, diagramas, compartidos).
+  - ✅ Remover el archivo de Git y confirmar el commit correspondiente.
 - **Fuera de alcance:**
-  - ❌ Modificar el código pytm.
-  - ❌ Ejecutar validaciones de amenazas (cubiertas por UC-API-007).
+  - ❌ Retención de backups (gestionada por políticas externas).
+  - ❌ Soft delete (no implementado en la versión actual).
 
 ---
 
 ## 3. PRECONDICIONES
 
-- El modelo pytm está vinculado al diagrama activo y se encuentra accesible.
-- El entorno dispone de las herramientas requeridas para producir las visualizaciones.
-- El actor cuenta con permisos para solicitar la generación.
+- El modelo existe y se encuentra asociado al usuario solicitante o su rol permite la eliminación.
+- El repositorio Git permite operaciones `git rm` y commits.
+- No existen bloqueos de base de datos que impidan transacciones prolongadas.
 
 ---
 
@@ -46,12 +46,14 @@
 
 |Paso|Actor|Interacción|
 |---|---|---|
-|1|SERVICIO DE UI|Solicita la generación de visualizaciones para el modelo pytm asociado.
-|2|SISTEMA|Verifica que el modelo existe y que puede procesarse.
-|3|SISTEMA|Ejecuta la generación de diagramas auxiliares.
-|4|SISTEMA|Guarda las salidas en la ubicación configurada para consultas posteriores.
-|5|SISTEMA|Notifica que los artefactos están listos y dónde puede accederse a ellos.
-|6|SERVICIO DE UI|Presenta los enlaces o previsualizaciones al AUTOR FUNCIONAL.
+|1|SERVICIO DE UI|Envía `DELETE /api/models/{model_id}` tras confirmación del usuario.| 
+|2|API|Verifica permisos y prepara transacción en base de datos.| 
+|3|API|Elimina registros de `threat_findings`, `diagrams`, `comments` y `model_shares` asociados.| 
+|4|API|Elimina el registro principal de `pytm_models`.| 
+|5|API|Ejecuta `git rm` sobre el archivo del modelo y crea commit "Deleted model".| 
+|6|API|Confirma la transacción y registra evento `model_deleted` en auditoría.| 
+|7|API|Responde `204 No Content`.| 
+|8|SERVICIO DE UI|Actualiza el listado y muestra mensaje de confirmación.| 
 
 ---
 
@@ -59,7 +61,8 @@
 
 |ID|Condición|Curso de acción|
 |---|---|---|
-|FA-01|El modelo pytm tiene advertencias menores|El SISTEMA completa la generación e incluye las advertencias en la notificación.
+|FA-01|El usuario no es propietario|La API responde `403 Forbidden` indicando que solo propietarios o administradores pueden eliminar.| 
+|FA-02|Se solicita eliminación masiva|La API recomienda usar endpoint batch (pendiente) y devuelve `409 Conflict` si existe procesamiento en curso.| 
 
 ---
 
@@ -67,28 +70,38 @@
 
 |ID|Evento|Respuesta observable|
 |---|---|---|
-|FE-01|No se encuentra el modelo pytm|El SISTEMA detiene la operación e informa al actor que debe vincular un modelo válido.
-|FE-02|Una dependencia de renderizado falla|El SISTEMA registra el incidente, cancela la generación y solicita soporte técnico.
+|FE-01|Falla al eliminar archivo en Git|La API revierte la transacción y responde `500 Internal Server Error`.| 
+|FE-02|Algún registro dependiente no puede eliminarse|La API aborta la operación, registra el incidente y devuelve `409 Conflict`.| 
+|FE-03|La transacción excede el tiempo límite|La API cancela el proceso y responde `504 Gateway Timeout` sugiriendo reintento.| 
 
 ---
 
 ## 7. POSTCONDICIONES
 
-- **Éxito:** Los diagramas auxiliares quedan disponibles y asociados a la versión del modelo.
-- **Fallo:** No se generan archivos nuevos y se mantienen las últimas salidas válidas documentando la causa del fallo.
+- **Éxito:** El modelo y sus artefactos desaparecen de la plataforma y el repositorio.
+- **Fallo:** No se eliminan registros; se mantiene el estado previo documentando la causa.
 
 ---
 
 ## 8. REQUISITOS ESPECIALES
 
-- Las salidas deben identificarse con la versión del modelo para evitar confusiones.
-- Se debe informar el tiempo estimado de generación cuando exceda unos segundos.
+- Registrar el identificador del commit de eliminación en la auditoría.
+- Notificar a colaboradores previamente compartidos (evento `model.revoked`).
+- Garantizar que las rutas de archivos eliminados no queden huérfanas en el repositorio.
 
 ---
 
 ## 9. REFERENCIAS Y TRAZABILIDAD
 
-- **Casos de uso relacionados:** UC-UI-002, UC-API-007.
-- **Artefactos complementarios:** No aplica (diagramas auxiliares se compartirán en anexos dedicados).
-- **Notas adicionales:** Los artefactos producidos sirven de insumo para la revisión en UC-API-009.
+- **Casos de uso relacionados:** UC-UI-001, UC-API-001, UC-API-004.
+- **Artefactos complementarios:** No aplica.
+- **Notas adicionales:** Considerar futura implementación de papelera de reciclaje.
 
+---
+
+## 10. TAREAS PENDIENTES DE DOCUMENTACIÓN
+
+|ID|Tarea|Estado|Dueño recomendado|
+|---|---|---|---|
+|TD-API-005-01|Detallar proceso de notificación a colaboradores tras eliminación.|Pendiente|Producto|
+|TD-API-005-02|Documentar estrategia de backup previo a eliminación para auditoría.|En curso|Operaciones|

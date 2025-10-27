@@ -1,9 +1,9 @@
-# UC-API-001: Generar diagrama versionado
+# UC-API-001: Registrar modelos visuales
 
 **Sistema:** Threat Modeling Platform API
 **Caso de Uso:** UC-API-001
-**Versión:** 1.1
-**Fecha:** 2025-10-27
+**Versión:** 1.0
+**Fecha:** 2025-10-28
 
 ---
 
@@ -12,33 +12,33 @@
 |Campo|Detalle|
 |---|---|
 |**Código**|UC-API-001|
-|**Nombre**|Generar diagrama versionado|
+|**Nombre**|Registrar modelos visuales|
 |**Actor primario**|SERVICIO DE UI|
-|**Actores de soporte**|AUTOR FUNCIONAL, OPERACIONES DE PLATAFORMA|
+|**Actores de soporte**|BASE DE DATOS, REPOSITORIO GIT|
 |**Frecuencia estimada**|Alta|
-|**Prioridad**|Alta — asegura trazabilidad de cambios sobre el modelo|
+|**Prioridad**|Alta — inicia el ciclo de vida de cada modelo|
 
 ---
 
 ## 2. PROPÓSITO Y ALCANCE
 
-- **Propósito:** Registrar una nueva versión del diagrama de amenazas solicitado por el AUTOR FUNCIONAL desde la interfaz.
-- **Resultado esperado:** La versión queda almacenada con metadatos de autoría y un identificador único que permite auditoría y rollback.
+- **Propósito:** Permitir que la UI cree modelos con metadatos, representación visual y código Python sincronizado.
+- **Resultado esperado:** La API persiste el modelo en base de datos, registra el archivo en Git y devuelve los identificadores necesarios a la UI.
 - **Alcance incluye:**
-  - ✅ Validar que el contenido recibido es apto para persistirse.
-  - ✅ Guardar el diagrama y sus artefactos relacionados en el repositorio histórico.
-  - ✅ Confirmar al actor que la versión fue creada exitosamente.
+  - ✅ Validar que el esquema visual y el código Python recibidos sean consistentes.
+  - ✅ Insertar registros en la base de datos con autoría, etiquetas y timestamps.
+  - ✅ Crear el archivo Python en el repositorio Git y confirmar el commit.
 - **Fuera de alcance:**
-  - ❌ Resolver errores de sintaxis del modelo (trazados en UC-API-002).
-  - ❌ Ejecutar análisis de amenazas posteriores (cubierto por UC-API-006 y UC-API-007).
+  - ❌ Generar diagramas derivados (cubierto en UC-API-006).
+  - ❌ Compartir acceso con otros usuarios (cubierto en UC-API-009).
 
 ---
 
 ## 3. PRECONDICIONES
 
-- El SERVICIO DE UI cuenta con un token o sesión válida para invocar la API.
-- Existe al menos una versión previa o un espacio inicial reservado para el diagrama.
-- El repositorio de historial tiene permisos de escritura disponibles.
+- El usuario está autenticado y cuenta con permisos de creación.
+- El repositorio Git está accesible y tiene espacio disponible.
+- Existen reglas de validación para el esquema de nodos y aristas.
 
 ---
 
@@ -46,12 +46,13 @@
 
 |Paso|Actor|Interacción|
 |---|---|---|
-|1|SERVICIO DE UI|Envía la solicitud de guardado con el código del diagrama y la descripción del cambio.
-|2|SISTEMA|Valida que la sesión es válida y que el diagrama identificado puede versionarse.
-|3|SISTEMA|Persiste el contenido junto con autor, descripción y marca temporal.
-|4|SISTEMA|Actualiza el historial vinculando la nueva versión con la previa.
-|5|SISTEMA|Responde al SERVICIO DE UI con el identificador de versión confirmando el éxito.
-|6|SERVICIO DE UI|Informa al AUTOR FUNCIONAL que la versión está lista para usarse.
+|1|SERVICIO DE UI|Envía `POST /api/models` con nombre, descripción, etiquetas, modelo visual y código Python generado.| 
+|2|API|Valida el payload, asegura que nodos y aristas sean arreglos y que el código compile correctamente.| 
+|3|API|Registra el modelo en `pytm_models`, asociando autor, etiquetas y timestamps, y obtiene el `model_id`.| 
+|4|API|Crea el archivo Python dentro del repositorio Git, añade el commit "Created model" y guarda el hash resultante.| 
+|5|API|Actualiza el registro con la ruta del archivo y hash de commit, registra evento en auditoría.| 
+|6|API|Responde `201 Created` con el identificador del modelo, metadatos y referencias a Git.| 
+|7|SERVICIO DE UI|Redirige al editor usando el `model_id` retornado y almacena la confirmación del guardado inicial.| 
 
 ---
 
@@ -59,8 +60,8 @@
 
 |ID|Condición|Curso de acción|
 |---|---|---|
-|FA-01|El diagrama solicitado no existe|El SISTEMA comunica la inexistencia del recurso; el SERVICIO DE UI notifica y ofrece crear un nuevo diagrama.
-|FA-02|La versión supera el tamaño máximo permitido|El SISTEMA rechaza el guardado indicando el límite y conserva la versión anterior activa.
+|FA-01|El código Python no compila|La API responde `400 Bad Request` con detalle de la línea afectada para que la UI solicite corrección.| 
+|FA-02|Ya existe un modelo con el mismo nombre para el autor|La API permite la creación pero agrega sufijo sugerido y notifica a la UI la colisión para su tratamiento.| 
 
 ---
 
@@ -68,29 +69,38 @@
 
 |ID|Evento|Respuesta observable|
 |---|---|---|
-|FE-01|Se interrumpe la escritura en el repositorio histórico|El SISTEMA detiene la operación, registra el error y solicita intervención de OPERACIONES DE PLATAFORMA.
-|FE-02|La sesión del SERVICIO DE UI caduca durante el proceso|El SISTEMA invalida la solicitud, no guarda cambios y pide autenticarse nuevamente.
+|FE-01|Falla el commit en Git|La API revierte la transacción, elimina registros creados y responde `500 Internal Server Error`.| 
+|FE-02|Se pierde conexión a la base de datos durante la inserción|La API aborta la transacción y responde `503 Service Unavailable` indicando reintento posterior.| 
+|FE-03|El payload supera el tamaño permitido|La API responde `413 Payload Too Large` e informa el límite soportado.| 
 
 ---
 
 ## 7. POSTCONDICIONES
 
-- **Éxito:** El historial del diagrama incluye la nueva versión con su identificador y metadatos completos.
-- **Fallo:** No se crean nuevas versiones y el sistema mantiene el estado previo documentando la causa del fallo.
+- **Éxito:** El modelo queda almacenado con referencias a Git y puede ser editado o listado por otros casos de uso.
+- **Fallo:** No se guardan cambios y se mantienen los repositorios sin modificación.
 
 ---
 
 ## 8. REQUISITOS ESPECIALES
 
-- Debe conservarse la integridad de las versiones anteriores; ningún guardado puede sobrescribirlas.
-- La respuesta debe incluir referencias que permitan iniciar consultas o diffs posteriores.
-- Los mensajes de error tienen que indicar el motivo y sugerir acciones para corregirlo.
+- El commit inicial debe seguir convención `Created model: <Nombre>`.
+- Los modelos deben registrarse con etiquetas en minúsculas y sin espacios para facilitar búsquedas.
+- Registrar en auditoría el tiempo total de creación para fines de métricas.
 
 ---
 
 ## 9. REFERENCIAS Y TRAZABILIDAD
 
-- **Casos de uso relacionados:** UC-UI-001.
-- **Artefactos complementarios:** No aplica (diagramas se documentarán por separado).
-- **Notas adicionales:** Comparte trazabilidad con las operaciones de historial descritas en UC-API-003 y UC-API-004.
+- **Casos de uso relacionados:** UC-UI-001, UC-API-003, UC-API-004.
+- **Artefactos complementarios:** No aplica.
+- **Notas adicionales:** Mantener sincronizada la ruta del archivo con el árbol físico `/pytm-models/models/`.
 
+---
+
+## 10. TAREAS PENDIENTES DE DOCUMENTACIÓN
+
+|ID|Tarea|Estado|Dueño recomendado|
+|---|---|---|---|
+|TD-API-001-01|Agregar ejemplo completo del payload `POST /api/models` en la guía para desarrolladores.|Pendiente|Documentación técnica|
+|TD-API-001-02|Incluir escenario de creación a partir de importación JSON cuando se libere el endpoint dedicado.|En curso|Producto|
