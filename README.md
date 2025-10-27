@@ -779,6 +779,17 @@ Defaults:threatmodel !requiretty
 
 ## Desarrollo
 
+### Configuración de ganchos de Git
+
+- Ejecuta `infrastructure/bin/setup` inmediatamente después de clonar el repositorio
+  para que `core.hooksPath` apunte a `.githooks/`.
+- Si prefieres configurarlo manualmente, usa
+  `git config core.hooksPath .githooks` desde la raíz del proyecto.
+- El hook `commit-msg` valida mensajes bajo el estándar Conventional Commits y
+  solo acepta los tipos `build`, `chore`, `ci`, `docs`, `feat`, `fix`, `perf`,
+  `refactor`, `revert`, `style` y `test`; evita omitirlo con `--no-verify` para
+  mantener un historial consistente.
+
 ### Agregar Nuevos Modelos
 
 1. Crear archivo en `api/models/mi_modelo_model.py`
