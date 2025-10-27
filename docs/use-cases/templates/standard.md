@@ -102,3 +102,17 @@ Añade la información que vincula este caso de uso con otros artefactos.
 - **Casos de uso relacionados:** <UC-XXX-... o "No aplica">.
 - **Artefactos complementarios:** <Diagramas, mockups, etc., con enlace relativo o "No aplica">.
 - **Notas adicionales:** <Observaciones de trazabilidad o estado>.
+
+---
+
+## 10. TAREAS PENDIENTES DE DOCUMENTACIÓN
+
+Registra acciones concretas para mantener la especificación actualizada. Usa
+este listado para sincronizar el backlog central en `docs/use-cases/api/README.md`
+u otros catálogos correspondientes.
+
+|ID|Tarea|Estado|Dueño recomendado|
+|---|---|---|---|
+|TD-XXX|<Descripción breve de la tarea>|<Pendiente/En curso/Completada>|<Rol o equipo responsable>|
+
+Si no existen tareas pendientes, indica "No se identifican tareas pendientes".

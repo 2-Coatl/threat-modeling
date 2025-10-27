@@ -32,4 +32,6 @@ plantilla estándar.
 
 
 Cada documento sigue `templates/standard.md`, define actores en mayúsculas y
-mantiene trazabilidad hacia referencias técnicas desde la sección 9.
+mantiene trazabilidad hacia referencias técnicas desde la sección 9. Las tareas
+listadas aquí deben reflejarse también en la sección 10 de cada caso de uso
+para conservar el historial de mantenimiento.

@@ -42,7 +42,10 @@ diseño técnico ni en detalles de implementación.
    cambia la interacción desde la perspectiva del actor.
 6. **Documenta referencias y trazabilidad.** Completa la sección 9 para enlazar
    casos de uso relacionados, diagramas o artefactos complementarios.
-7. **Versiona los documentos.** Actualiza la sección de metadatos con la fecha y
+7. **Gestiona tareas de documentación.** Usa la sección 10 de la plantilla para
+   registrar acciones pendientes y sincronizarlas con los catálogos (`api/`,
+   `ui/`, etc.).
+8. **Versiona los documentos.** Actualiza la sección de metadatos con la fecha y
    versión cuando cambien reglas o comportamientos.
 
 ## Inventario vigente
